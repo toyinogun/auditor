@@ -6,8 +6,10 @@ Loads records, runs the checks and stores the findings (spec 0001 layout). The g
 
 - `run.ts`: `runAudit(db, clock)` runs `runChecks(loadAuditInput(db))` over whatever is stored, saves it with `saveAuditRun` (replacing earlier findings, keeping decisions) and returns `{ runId, summary }`.
 - `sample.ts`: `runSampleAudit(db, clock, manifest)`, the offline audit and what "Load sample data" calls. In one transaction: `resetAll`, store the 14 sample documents with the real hashes from `public/sample/manifest.json`, save the fixture records via `briefSampleRecords`, then `runAudit`. A rerun replaces everything, decisions included; a throw rolls it all back.
-- `scripts/audit-sample/index.ts` exposes it as `pnpm audit:sample` against `$DATA_DIR/auditor.db`.
-- `store.ts`: the storage steps both runs share: `storeManifestDocuments` (manifest order, so document ids match), `trySaveAuditInput` (returns the first refused save as a value) and `saveAuditInput` (throws it).
+- `loadSample(db, files, clock, manifest)` in `sample.ts` runs `runSampleAudit`, then empties the uploads folder (spec 0006, AC-14).
+- `scripts/audit-sample/index.ts` exposes `loadSample` as `pnpm audit:sample` against `$DATA_DIR/auditor.db`.
+- `store.ts`: the storage steps both runs share: `storeManifestDocuments` (manifest order, so document ids match), `trySaveAuditInput` (returns the first refused save as a value) and `saveAuditInput` (throws it). `saveDocumentRecords` stores one ingested document's records and marks it `done` in one transaction; a refused save comes back as `err` with a plain reason, never the driver's message (it lands in `documents.error` and the webhook answer).
+- `headline.ts`: `latestHeadline(db)` and `headlineText`, the `N findings, $X recoverable of $Y invoiced (Z%)` line the upload panel and webhook show (spec 0006).
 - `live.ts`: `runLiveAudit(db, manifest, deps)`, the live run (spec 0005). Extracts the PDFs 4 at a time, parses both CSVs, and stores only when all read cleanly, in one transaction (`storeLiveSample`). `compare.ts` lists every kind, record, finding and headline mismatch against offline mode.
 - `scripts/audit-live/index.ts` exposes it as `pnpm audit:live` (`--dump` writes each extraction to `$DATA_DIR/live-dump/`).
 

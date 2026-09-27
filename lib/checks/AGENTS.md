@@ -8,7 +8,7 @@ The six audit checks as pure functions over `AuditInput`. Governing spec: [0004 
 - `context.ts`: `buildContext`, the read only lookups every check shares (contract in force, PO by number, receipts, payments by normalized invoice number). Answers never depend on input order.
 - `duplicate.ts`: `findDuplicates`, runs first; its flagged copies are left out of every other check. Also exports `byInvoiceOrder` (invoice date, then `documentId`).
 - `contract-price.ts`, `quantity-received.ts`, `surcharge.ts`, `freight.ts`, `missing-reference.ts`: one check each, `(originals, ctx) => readonly Finding[]`.
-- `summary.ts`: `summarizeFindings(invoices, findings)`: recoverable sums `recover` only, blocked sums `block_payment` only.
+- `summary.ts`: `summarizeFindings(invoices, findings)`: recoverable sums `recover` only, blocked sums `block_payment` only. `recoverableShareText` formats the headline percent (one decimal).
 - `action.ts`: `actionFor` (paid → `recover`, unpaid → `block_payment`, $0 → `review_only`) and the finding builders `moneyFinding`, `reviewFinding`, `buildFinding`.
 - `evidence.ts`: `evidenceItem`, locators (`line N`, `charge line N`, `row N`, the fixed labels in `INVOICE_LABEL`) and the calculation text pieces (`MINUS` `−`, `TIMES` `×`, `formatQuantity`, `amountsTerm`).
 
