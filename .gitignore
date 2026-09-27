@@ -47,3 +47,6 @@ next-env.d.ts
 # sample generator temp and moved aside folders (spec 0003)
 /public/.sample.tmp/
 /public/.sample.tmp.old/
+
+# Playwright MCP snapshots, console logs and screenshots from /check verify
+/.playwright-mcp/
