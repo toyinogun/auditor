@@ -1,6 +1,6 @@
 # 0002. Data model for documents, records, findings and decisions
 
-**Date**: 2026-09-27
+**Date**: 2026-09-27 · updated 2026-09-27 (Feature 7 parses the CSVs)
 **Status**: Accepted
 
 ## Summary
@@ -51,7 +51,7 @@ Reasoning and options: see [rationale.md](rationale.md).
 | Layer | What it is | Money looks like | Used by |
 |---|---|---|---|
 | Extraction | Claude tool input and the offline JSON copies: `InvoiceExtraction`, `ContractExtraction`, `PurchaseOrderExtraction` | decimal string as printed, `"5.10"` | Features 4, 7 |
-| CSV rows | One row of `receipts.csv` or `ap_payments.csv`: `ReceiptCsvRow`, `PaymentCsvRow` | decimal string | Features 4, 8 |
+| CSV rows | One row of `receipts.csv` or `ap_payments.csv`: `ReceiptCsvRow`, `PaymentCsvRow` | decimal string | Features 4, 7 (parsed by `lib/ingest/csv.ts`), 8 |
 | Records | What the checks read: `InvoiceRecord`, `ContractRecord`, `PurchaseOrderRecord`, `ReceiptRecord`, `PaymentRecord`, bundled as `AuditInput` | integer cents | Features 5, 6 |
 | Findings | `Finding`, `EvidenceItem`, `DecisionInput` | integer cents | Features 5, 10, 11 |
 
@@ -140,7 +140,7 @@ Every `id` is an `integer` primary key, auto increment. `_cents`, `_bps`, `quant
 | `to*Record` | cents | `parseMoney` of the printed string |
 | `to*Record` | basis points | `parseRate` of the printed percent string |
 | `toInvoiceRecord` | `lineNo` on lines and charges | position in the extraction array, starting at 1 |
-| `to*Record` (CSV) | `rowNo` | data row index in the CSV, starting at 1, header excluded; passed in by the caller (Feature 6/8) |
+| `to*Record` (CSV) | `rowNo` | data row index in the CSV, starting at 1, header excluded; passed in by the caller (Feature 6, 7 or 8) |
 | `save*` | `supplier_id` | upsert by `normalizeSupplierKey(supplierName)`; for payments, the `supplier` CSV column |
 | `insertDocument` | `source` | the caller: upload action, webhook route, or sample loader |
 | `insertDocument` | `sha256`, `size_bytes`, `mime_type` | computed by the caller from the file bytes (Feature 8), or the sample loader |
