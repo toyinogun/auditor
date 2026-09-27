@@ -24,6 +24,7 @@ import type { DocumentKind } from "@/lib/schemas/enums";
 import type { DocumentRef } from "@/lib/schemas/records";
 import { err, ok, type Result } from "@/lib/schemas/result";
 import { parsePaymentsCsv, parseReceiptsCsv } from "./csv";
+import { sampleFor, type SampleFile } from "./demo";
 import { baseName, detectFile, type DetectedFile } from "./detect";
 import type { UploadStore } from "./files";
 
@@ -78,6 +79,14 @@ type IngestResult = Result<IngestOutcome, IngestError>;
 
 const UNEXPECTED_FAILURE = "an unexpected error stopped this file, retry it";
 const MISSING_FILE = "the saved file is missing, upload it again";
+const DEMO_REFUSED = "on the demo, only the sample files can be uploaded";
+
+/** A file that passed the checks: what it is, its bytes, and its sample entry on the demo. */
+type CheckedFile = {
+  readonly detected: DetectedFile;
+  readonly bytes: Uint8Array;
+  readonly sample: SampleFile | null;
+};
 
 const refuse = (
   code: IngestErrorCode,
@@ -149,17 +158,38 @@ const csvRecords = (
     : rows;
 };
 
-/** Step 7: the records, from the model for a PDF or the parsers for a CSV. */
+/**
+ * Step 7: the records, from the fixture on the demo, the model for a PDF, or the parsers for a
+ * CSV. The model is never called in demo mode (spec 0006, key invariants).
+ */
 const recordsFor = async (
   document: StoredDocument,
-  detected: DetectedFile,
-  bytes: Uint8Array,
+  file: CheckedFile,
   deps: IngestDeps,
 ): Promise<Result<DocumentRecords>> => {
+  if (file.sample !== null) return ok(file.sample.recordsFor(document.id));
+  if (deps.demoMode)
+    throw new Error("demo mode reached ingest without a sample");
   const ref = { documentId: document.id, filename: document.filename };
-  if (detected.format === "csv") return csvRecords(detected, ref);
-  const extracted = await deps.extract({ filename: document.filename, bytes });
+  if (file.detected.format === "csv") return csvRecords(file.detected, ref);
+  const extracted = await deps.extract({
+    filename: document.filename,
+    bytes: file.bytes,
+  });
   return extracted.ok ? pdfRecords(extracted.value, ref) : extracted;
+};
+
+/** Step 3: on the demo only a file whose hash is in the sample manifest passes (AC-7). */
+const demoGate = (
+  sha256: string,
+  deps: IngestDeps,
+  documentId: number | null,
+): Result<SampleFile | null, IngestError> => {
+  if (!deps.demoMode) return ok(null);
+  const sample = sampleFor(sha256);
+  return sample === null
+    ? err({ code: "demo_refused", message: DEMO_REFUSED, documentId })
+    : ok(sample);
 };
 
 /** Where a stored document's file lives, from the type `detectFile` recorded. */
@@ -189,11 +219,10 @@ const failWith = (
 const processClaimed = async (
   db: Db,
   document: StoredDocument,
-  detected: DetectedFile,
-  bytes: Uint8Array,
+  file: CheckedFile,
   deps: IngestDeps,
 ): Promise<IngestResult> => {
-  const records = await recordsFor(document, detected, bytes, deps);
+  const records = await recordsFor(document, file, deps);
   const saved = records.ok
     ? saveDocumentRecords(db, records.value, deps.clock())
     : records;
@@ -213,8 +242,7 @@ const processClaimed = async (
 const ingestExisting = async (
   db: Db,
   document: StoredDocument,
-  detected: DetectedFile,
-  bytes: Uint8Array,
+  file: CheckedFile,
   deps: IngestDeps,
 ): Promise<IngestResult> => {
   switch (document.status) {
@@ -231,7 +259,7 @@ const ingestExisting = async (
     case "extracting":
       return refuse("in_progress", "already being processed", document.id);
     case "failed":
-      return claimAndProcess(db, document, "failed", detected, bytes, deps);
+      return claimAndProcess(db, document, "failed", file, deps);
   }
 };
 
@@ -240,8 +268,7 @@ const claimAndProcess = async (
   db: Db,
   document: StoredDocument,
   from: "queued" | "failed",
-  detected: DetectedFile,
-  bytes: Uint8Array,
+  file: CheckedFile,
   deps: IngestDeps,
 ): Promise<IngestResult> => {
   const claimed = claimDocument(db, document.id, from, deps.clock());
@@ -249,7 +276,7 @@ const claimAndProcess = async (
     return refuse("in_progress", "already being processed", document.id);
   }
   try {
-    return await processClaimed(db, claimed, detected, bytes, deps);
+    return await processClaimed(db, claimed, file, deps);
   } catch (error) {
     // A bug, so it still throws; the document must not stay held until the next restart.
     setDocumentStatus(
@@ -270,6 +297,8 @@ const ingestSteps = async (
   const detected = detectFile(input.filename, input.bytes, deps.maxUploadBytes);
   if (!detected.ok) return refuse(detected.error.code, detected.error.message);
   const sha256 = sha256Of(input.bytes);
+  const sample = demoGate(sha256, deps, null);
+  if (!sample.ok) return sample;
   await deps.files.write(sha256, detected.value.extension, input.bytes);
   const { document, alreadyIngested } = insertDocument(
     db,
@@ -282,16 +311,14 @@ const ingestSteps = async (
     },
     deps.clock(),
   );
+  const file = {
+    detected: detected.value,
+    bytes: input.bytes,
+    sample: sample.value,
+  };
   return alreadyIngested
-    ? ingestExisting(db, document, detected.value, input.bytes, deps)
-    : claimAndProcess(
-        db,
-        document,
-        "queued",
-        detected.value,
-        input.bytes,
-        deps,
-      );
+    ? ingestExisting(db, document, file, deps)
+    : claimAndProcess(db, document, "queued", file, deps);
 };
 
 type LogFields = {
@@ -361,12 +388,20 @@ const retrySteps = async (
       document.id,
     );
   }
+  const sample = demoGate(document.sha256, deps, document.id);
+  if (!sample.ok) return sample;
   const bytes = await deps.files.read(document.sha256, extensionOf(document));
   if (bytes === null) return failWith(db, document, MISSING_FILE, deps);
   // A failed document's kind is still null, so the type is worked out again (AC-10).
   const detected = detectFile(document.filename, bytes, deps.maxUploadBytes);
   if (!detected.ok) return failWith(db, document, detected.error.message, deps);
-  return claimAndProcess(db, document, "failed", detected.value, bytes, deps);
+  return claimAndProcess(
+    db,
+    document,
+    "failed",
+    { detected: detected.value, bytes, sample: sample.value },
+    deps,
+  );
 };
 
 /** Runs ingest again on a failed document from its saved file (spec 0006, AC-10). */
