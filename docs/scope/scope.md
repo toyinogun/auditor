@@ -83,8 +83,8 @@ The six checks as pure functions (contract price, duplicates against the ledger,
 **Done when:** tests assert all 8 expected findings and the $9,766.85 total (18.1% of $53,939.60), NL-88121 comes back clean, the duplicate NL88310's own price and freight issues are not counted a second time, and every finding shows its calculation and sources.
 spec [0004](../specs/0004-six-audit-checks/index.md) · code in `lib/checks/`, `lib/schemas/fixtures/brief-sample-records.ts`, `lib/db/audit.ts`
 - [x] Design it (spec): `/architect six audit checks`
-- [ ] Build it: `/develop six audit checks`
-  - [ ] Fixture records, lookup context, evidence helpers and the lint purity guard (AC-15)
+- [x] Build it: `/develop six audit checks`
+  - [x] Fixture records, lookup context, evidence helpers and the lint purity guard (AC-15)
   - [x] Duplicates, summary, `runChecks` pipeline, full acceptance test written, `saveAuditRun` recover only total (AC-2, AC-4 to AC-6)
   - [x] Contract price, missing reference and quantity received checks (AC-9, AC-10, AC-13)
   - [x] Surcharge and freight checks; acceptance test green, evidence, key, schema and shuffle tests (AC-1, AC-3, AC-7, AC-8, AC-11, AC-12, AC-14)

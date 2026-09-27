@@ -21,7 +21,7 @@ There is no UI in this feature (Feature 10 shows the findings), so every step is
 - [ ] Freight on a `not_stated` (Brightwater) or `billable` contract gives no finding → AC-12
 - [ ] Two bearing lines at $5.10 and $5.00 give one finding of $600.00; a line below contract never reduces it → AC-13
 - [ ] Shuffle every input array: `runChecks` returns a deep equal list; every finding parses with `Finding`; keys are unique → AC-14
-- [ ] Add `import { openDb } from "@/lib/db/client"` to any file in `lib/checks/`: `pnpm lint` fails (needs the ESLint guard, still pending) → AC-15
+- [ ] Add `import { openDb } from "@/lib/db/client"` to any file in `lib/checks/`: `pnpm lint` fails → AC-15
 
 ## Value sourcing
 - [ ] Contract in force: move an invoice date to the contract's last day (2026-12-31) and one day after; the first still prices, the second gives a `contract` finding → contract in force
@@ -33,4 +33,4 @@ There is no UI in this feature (Feature 10 shows the findings), so every step is
 - [ ] Summary counts duplicates in `invoicedTotalCents` (6 invoices, $53,939.60) → summary
 
 ## Acceptance criteria coverage
-- AC-1, AC-7: `index.test.ts` acceptance table · AC-2: summary steps · AC-3: NL-88121 step · AC-4, AC-5: duplicate steps · AC-6: payment and `saveAuditRun` steps · AC-8: evidence step · AC-9: missing reference step · AC-10: partial invoice and no receipt steps · AC-11: surcharge step · AC-12: freight step · AC-13: same SKU step · AC-14: shuffle step · AC-15: lint step (pending the ESLint guard)
+- AC-1, AC-7: `index.test.ts` acceptance table · AC-2: summary steps · AC-3: NL-88121 step · AC-4, AC-5: duplicate steps · AC-6: payment and `saveAuditRun` steps · AC-8: evidence step · AC-9: missing reference step · AC-10: partial invoice and no receipt steps · AC-11: surcharge step · AC-12: freight step · AC-13: same SKU step · AC-14: shuffle step · AC-15: lint step
