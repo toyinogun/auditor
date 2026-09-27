@@ -36,6 +36,7 @@ pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
 pnpm exec drizzle-kit generate  # New SQL migration in drizzle/ after editing lib/db/schema.ts (applied at server start)
 pnpm generate:sample  # Rewrite public/sample/ from the fixture (committed output, never edit by hand)
 pnpm audit:sample  # Offline audit: reset $DATA_DIR/auditor.db, load the sample, run the checks, store the findings, empty $DATA_DIR/uploads/
+pnpm design:lint  # Lint DESIGN.md with the pinned @google/design.md CLI (must exit clean)
 pnpm audit:live  # Live audit: Claude reads the 12 sample PDFs, must match offline mode to the cent (needs ANTHROPIC_API_KEY, 12 to 24 paid calls; --dump writes each extraction to $DATA_DIR/live-dump/)
 ```
 
@@ -50,6 +51,7 @@ Stored in `docs/specs/`. Format: `docs/specs/NNNN-title/index.md`. Scope: `docs/
 - Folders follow the spec layout: one domain module per `lib/` folder, routes in `app/`, shadcn in `components/ui/`. Don't reorganize by feature or layer.
 - Expected failures return typed results (`{ ok: true, value } | { ok: false, error }`); throw only for bugs. Server Actions return the same shape.
 - Config comes only from `lib/env.ts`; never read `process.env` elsewhere. Never log document contents or secrets.
+- Design system: build all UI to `DESIGN.md` ("Highlighter Ledger", spec 0007). Token values live only in `app/styles/design-tokens.css`, mapped once in `app/globals.css`; components use Tailwind utilities and `type-*` only. Amber (`tertiary*`) marks overpaid money and nothing else (a source guard enforces both).
 - Log through `logEvent` in `lib/log.ts` (one JSON line per event, counts and outcomes only).
 - Named exports only, except where Next.js requires a default (`page`, `layout`, route files, config).
 - The brief's expected findings ($9,766.85 recoverable, 8 findings) are the acceptance test. Fix the code, never the numbers.
@@ -78,12 +80,13 @@ Chosen by `/audit`, installed by `/develop tooling`:
 - [shadcn](.agents/skills/shadcn/): `shadcn-ui/ui`, adding and customizing shadcn/ui components
 - [tailwind-v4-shadcn](.agents/skills/tailwind-v4-shadcn/): `secondsky/claude-skills`, Tailwind v4 `@theme` and CSS variable patterns (ignore its Vite config)
 
-Declined: drizzle-sqlite, better-sqlite3-rebuild, vitest, zod, exceljs, pdfkit, @napi-rs/canvas, tsx, unpdf
-Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-server, aviddiviner/mcp-pdfkit
+Declined: drizzle-sqlite, better-sqlite3-rebuild, vitest, zod, exceljs, pdfkit, @napi-rs/canvas, tsx, unpdf, google-labs-code/stitch-skills@design-md, sickn33/agentic-awesome-skills@radix-ui-design-system
+Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-server, aviddiviner/mcp-pdfkit, DesignMD (designmd.ai), gianpieropuleo/radix-mcp-server
 
 ## Context files
 
 - [n8n/AGENTS.md](n8n/AGENTS.md): the Google Drive intake workflow that posts to `/api/ingest`
+- [components/AGENTS.md](components/AGENTS.md): the shared UI (restyled shadcn primitives, `Money`, `SummaryTile`, `Chip`, `AppBar`) and the design token rules
 - [lib/schemas/AGENTS.md](lib/schemas/AGENTS.md): the shared Zod shapes, money in cents, converters and keys
 - [lib/db/AGENTS.md](lib/db/AGENTS.md): SQLite schema, migrations and the storage functions
 - [lib/checks/AGENTS.md](lib/checks/AGENTS.md): the six pure audit checks, `runChecks` and `summarizeFindings`
