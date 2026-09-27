@@ -117,7 +117,7 @@ No HTTP routes and no Server Actions. The surface is one command and a few modul
 
 | Entry | Kind | Key inputs | Key outputs | Auth | Key errors |
 |---|---|---|---|---|---|
-| `pnpm generate:sample` | CLI (`tsx scripts/generate-sample/index.ts`) | none | writes into `public/.sample.tmp/` (same disk, so the rename cannot fail with `EXDEV`), then removes `public/sample/` and renames the temp folder into place; prints one line per file (name, size) and a total | local developer only | fixture invalid (AC-2), font file missing, write or rename failure: non zero exit, previous folder kept |
+| `pnpm generate:sample` | CLI (`tsx scripts/generate-sample/index.ts`) | none | writes into `public/.sample.tmp/` (same disk, so the renames cannot fail with `EXDEV`), then moves `public/sample/` aside to `public/.sample.tmp.old/`, renames the temp folder into place, and only then deletes the moved aside folder; prints one line per file (name, size) and a total | local developer only | fixture invalid (AC-2), font file missing, write or rename failure: non zero exit, previous folder kept (moved back if the second rename fails) |
 | `validateSample(sample)` | `validate.ts` | `BRIEF_SAMPLE` | `Result<void>` | none (pure) | reason names the file and line or row; converters get `{ documentId: 0, filename }` since no database row exists yet |
 | `renderSample()` | `render.ts` | none (reads the fixture and the committed fonts) | `Result<readonly { filename, bytes }[]>` for all 15 files | none | same as `validateSample` |
 | `toCsv(header, rows)` | `csv.ts` | header, rows of strings | CSV text | none (pure) | none |
@@ -157,7 +157,7 @@ No HTTP routes and no Server Actions. The surface is one command and a few modul
 - No money is computed as a float; only `parseMoney`, cents arithmetic and `formatCents` touch money.
 - Nothing in the output depends on the clock, the machine's locale or timezone, or `Math.random`: dates format in UTC, number grouping is fixed to en US, the PDF info dates are fixed, randomness is seeded.
 - `NL88310.pdf` contains no text drawing operations at all, so its only content is the image.
-- `public/sample/` is only ever replaced whole, never partly written. The temp folder `public/.sample.tmp/` is gitignored and removed at the start of each run.
+- `public/sample/` is only ever replaced whole, never partly written, and never lost. The temp folder `public/.sample.tmp/` and the moved aside folder `public/.sample.tmp.old/` are gitignored. Each run starts by moving `public/.sample.tmp.old/` back if `public/sample/` is missing (a run killed mid swap), then removes both leftovers.
 - CSVs are UTF 8 without a byte order mark, LF line endings, a trailing newline after the last row, and RFC 4180 quoting only when a cell holds a comma, quote or newline.
 - Documents render one after another, never in parallel (the canvas font registry and pdfkit font embedding are not checked for concurrent use).
 - `scripts/generate-sample/` imports `lib/schemas/` with relative paths, not the `@/` alias, so `tsx` and Vitest resolve it the same way.
@@ -180,7 +180,7 @@ New packages: `pdfkit`, `@types/pdfkit`, `@napi-rs/canvas` and `tsx` as dev depe
 - Guard: a copy of the fixture with NL-88310's unit price changed to `"5.01"` makes `validateSample` fail naming `NL-88310.pdf` and line 1, and nothing is rendered, verifies **AC-2**.
 - CSV round trip: parse both CSVs and convert each row with its `rowNo`; the records equal the fixture's converted records, verifies **AC-6**.
 - Determinism and drift: two in memory renders are byte equal, and their sha256 values equal the committed files, verifies **AC-7**.
-- Atomic swap: when rendering fails, `public/sample/` (or a temp stand in) is unchanged, verifies **AC-1**.
+- Atomic swap: when rendering, a write, or the second rename fails, `public/sample/` (or a temp stand in) is unchanged; a moved aside folder left by a killed run is moved back on the next run, verifies **AC-1**.
 - Auth/permission: not applicable (no accounts, no endpoint; the output is intentionally public).
 
 ## Build plan
