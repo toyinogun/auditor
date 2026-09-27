@@ -116,14 +116,14 @@ spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract
 ### 8. Upload & ingest · in-progress
 Upload PDFs and CSVs in the browser, and one ingest endpoint that both the upload and the n8n workflow post to. On the public demo, uploads are limited to the sample files.
 **Done when:** an uploaded file is stored, extracted and audited; the endpoint rejects unknown file types, oversized files and unauthenticated webhook calls; the public demo cannot send outside documents to the model.
-spec [0006](../specs/0006-upload-ingest/index.md)
+spec [0006](../specs/0006-upload-ingest/index.md) · code in `lib/ingest/`, `app/actions.ts`, `app/api/ingest/`, `app/_components/upload-panel.tsx`
 - [x] Design it (spec): `/architect upload & ingest`
-- [ ] Build it: `/develop upload & ingest`
+- [x] Build it: `/develop upload & ingest`
   - [x] Config, file type detection and the upload folder store (AC-4, AC-5, AC-15, AC-17)
   - [x] Thin whole: `ingestFile` for PDFs and CSVs, the upload action and the home page panel with headline (AC-1, AC-2, AC-9, AC-12, AC-13, AC-16)
   - [x] Duplicates, Retry and the restart sweep (AC-8, AC-10, AC-11)
   - [x] Demo gate and `loadSample` emptying uploads (AC-7, AC-14)
-  - [ ] `/api/ingest` webhook with its guards (AC-3, AC-5, AC-6, AC-17)
+  - [x] `/api/ingest` webhook with its guards (AC-3, AC-5, AC-6, AC-17)
 - [ ] Verify it: `/check verify upload & ingest`
 
 ## Release 3: Analyst review

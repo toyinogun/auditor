@@ -180,7 +180,7 @@ Skateboard: the first two steps make a complete, usable upload in the browser; e
 2. [x] Thin whole: `saveDocumentRecords`, `claimDocument`, `listDocuments`, `getDocument`, `latestAuditRun`; `ingestFile` for new PDFs and CSVs (no dedupe branches yet) with the log line; `uploadFile` action; `upload-panel.tsx` and the home page with the list and headline. Test with the fixture fake client and in memory SQLite. Satisfies **AC-1**, **AC-2**, **AC-9**, **AC-12**, **AC-13**, **AC-16**.
 3. [x] Duplicates, retry and restart: the `alreadyIngested` branches, `retryDocument` and the `retryUpload` action with the Retry button, the missing file case, and `failInterrupted` (rows plus `*.tmp-*` files) in `instrumentation.ts`. Satisfies **AC-8**, **AC-10**, **AC-11**.
 4. [x] Demo gate and reset: `lib/ingest/demo.ts`, the gate inside `ingestFile`, the all 14 files test, and `loadSample` with `scripts/audit-sample/` switched to it. Satisfies **AC-7**, **AC-14**.
-5. [ ] Webhook: `app/api/ingest/route.ts` with the guards in AC-6 order, the `Content-Length` checks and the streaming byte counter, multipart parsing, the status code mapping and route tests calling the exported `POST` with `Request` objects. Satisfies **AC-3**, **AC-5**, **AC-6**, **AC-17**.
+5. [x] Webhook: `app/api/ingest/route.ts` with the guards in AC-6 order, the `Content-Length` checks and the streaming byte counter, multipart parsing, the status code mapping and route tests calling the exported `POST` with `Request` objects. Satisfies **AC-3**, **AC-5**, **AC-6**, **AC-17**.
 
 ## Consequences
 
