@@ -11,3 +11,6 @@ skills-lock.json
 .claude/
 # Markdown is curated by hand and by the workflow skills; don't reflow it.
 *.md
+public/sample/
+public/.sample.tmp/
+scripts/generate-sample/fonts/

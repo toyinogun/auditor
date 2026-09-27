@@ -35,6 +35,8 @@ const eslintConfig = defineConfig([
     "drizzle/**",
     ".agents/**",
     ".claude/**",
+    "public/sample/**",
+    "public/.sample.tmp/**",
   ]),
 ]);
 
