@@ -1,0 +1,116 @@
+{
+  "files": [
+    {
+      "filename": "BW-5521.pdf",
+      "kind": "invoice",
+      "mimeType": "application/pdf",
+      "sha256": "9569dc7cabff16dd467bcfb9741b1dbca3637ac5e1df62805de9d86bad9347db",
+      "sizeBytes": 23107,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "BW-5530.pdf",
+      "kind": "invoice",
+      "mimeType": "application/pdf",
+      "sha256": "6c56c488455705a3d1b303e495d1e594bec98650b44a9502a74f1a8b7dd64ce6",
+      "sizeBytes": 22144,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "C-2026-014.pdf",
+      "kind": "contract",
+      "mimeType": "application/pdf",
+      "sha256": "29fb531bba28e08160b73206b0dd5bb854c7dca5e8854ae06bf51fcaf8bf1cb0",
+      "sizeBytes": 23811,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "C-2026-022.pdf",
+      "kind": "contract",
+      "mimeType": "application/pdf",
+      "sha256": "2d04b7375e003a370b5f4665f236740cbe4cf69e61031790f5c9a2c71aa6b072",
+      "sizeBytes": 22782,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "NL-88121.pdf",
+      "kind": "invoice",
+      "mimeType": "application/pdf",
+      "sha256": "315d9e7d53d2a155549f3775e329049450eb6f219c766207afc418ded0e1b592",
+      "sizeBytes": 22922,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "NL-88203.pdf",
+      "kind": "invoice",
+      "mimeType": "application/pdf",
+      "sha256": "425d05918d1a41171f4500415f93a322a6fe0538ccbad5d209805e3cd24fb58c",
+      "sizeBytes": 23126,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "NL-88310.pdf",
+      "kind": "invoice",
+      "mimeType": "application/pdf",
+      "sha256": "43ffd7f802cf8cbf44e258df9749fbd8b746cbc2390164d44e2319fa6a820052",
+      "sizeBytes": 22575,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "NL88310.pdf",
+      "kind": "invoice",
+      "mimeType": "application/pdf",
+      "sha256": "c184a79f7e2ef9d9e84386763b3ed1ebf7d9cbee73f28c78be1934bf46376a52",
+      "sizeBytes": 233796,
+      "hasTextLayer": false
+    },
+    {
+      "filename": "PO-4501.pdf",
+      "kind": "purchase_order",
+      "mimeType": "application/pdf",
+      "sha256": "64daa89ba9988f0403fccc953666502ad6eac2e9c949df35cb9bd9835ef6eafa",
+      "sizeBytes": 22441,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "PO-4502.pdf",
+      "kind": "purchase_order",
+      "mimeType": "application/pdf",
+      "sha256": "76af8e0a385aca9bb44b53df4538d0b341ae1380953cec4eefbe3954806fabd8",
+      "sizeBytes": 22752,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "PO-4503.pdf",
+      "kind": "purchase_order",
+      "mimeType": "application/pdf",
+      "sha256": "a8067d8d0a03b6fd2ae4be65c64256363c7f6ac5d4c1c55565052e3e7681dfb6",
+      "sizeBytes": 22236,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "PO-4504.pdf",
+      "kind": "purchase_order",
+      "mimeType": "application/pdf",
+      "sha256": "6a956be1e47146abbebdf04fa51bf9161c73fa7a7b16a9b0752f10a77fb399ac",
+      "sizeBytes": 22098,
+      "hasTextLayer": true
+    },
+    {
+      "filename": "ap_payments.csv",
+      "kind": "payments_csv",
+      "mimeType": "text/csv",
+      "sha256": "780b31e0f80830b428a41bdfbc72414e228392c288c3848b912d19fb41e8c23d",
+      "sizeBytes": 380,
+      "hasTextLayer": null
+    },
+    {
+      "filename": "receipts.csv",
+      "kind": "receipts_csv",
+      "mimeType": "text/csv",
+      "sha256": "31827f787169bd50edf078a47f7c79403819111485f225ae6620478f562be871",
+      "sizeBytes": 326,
+      "hasTextLayer": null
+    }
+  ]
+}
