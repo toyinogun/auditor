@@ -32,7 +32,7 @@ pnpm build        # Build
 pnpm typecheck    # next typegen + tsc --noEmit
 pnpm lint         # ESLint (lint:fix to autofix)
 pnpm format       # Prettier write (format:check to verify)
-# Test: runner set up by /test
+pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
 ```
 
 ## Specs
