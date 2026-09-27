@@ -83,6 +83,7 @@ Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-serve
 - [n8n/AGENTS.md](n8n/AGENTS.md): the Google Drive intake workflow that posts to `/api/ingest`
 - [lib/schemas/AGENTS.md](lib/schemas/AGENTS.md): the shared Zod shapes, money in cents, converters and keys
 - [lib/db/AGENTS.md](lib/db/AGENTS.md): SQLite schema, migrations and the storage functions
+- [lib/checks/AGENTS.md](lib/checks/AGENTS.md): the six pure audit checks, `runChecks` and `summarizeFindings`
 - [scripts/generate-sample/AGENTS.md](scripts/generate-sample/AGENTS.md): the sample data generator that renders `public/sample/` from the fixture
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

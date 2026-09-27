@@ -89,7 +89,7 @@ spec [0004](../specs/0004-six-audit-checks/index.md) · code in `lib/checks/`, `
   - [x] Contract price, missing reference and quantity received checks (AC-9, AC-10, AC-13)
   - [x] Surcharge and freight checks; acceptance test green, evidence, key, schema and shuffle tests (AC-1, AC-3, AC-7, AC-8, AC-11, AC-12, AC-14)
 - [ ] Verify it: `/check verify six audit checks`
-- [ ] Test it: `/test six audit checks`
+- [x] Test it: `/test six audit checks`
 
 ### 6. Offline audit run
 Load the structured sample records into storage, run the checks, and save the findings, so the whole audit works end to end with no API key. This is what "Load sample data" will call later.
