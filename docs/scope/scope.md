@@ -24,7 +24,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 4 | Sample data generator | Release 1 | done |
 | 5 | Six audit checks | Release 1 | done |
 | 6 | Offline audit run | Release 1 | done |
-| 7 | LLM classify & extract | Release 2 | in-progress |
+| 7 | LLM classify & extract | Release 2 | done |
 | 8 | Upload & ingest | Release 2 | planned |
 | 9 | Design system & UI foundation | Release 3 | planned |
 | 10 | Review screen | Release 3 | planned |
@@ -101,7 +101,7 @@ code in `lib/audit/`, `scripts/audit-sample/` (`pnpm audit:sample`)
 
 The same audit, now reading the actual PDFs.
 
-### 7. LLM classify & extract · in-progress
+### 7. LLM classify & extract · done
 One model call per document with one tool per document type, so a single call both classifies and extracts; the output is validated against the data model. Documents with a text layer send text, scanned ones send the file itself.
 **Done when:** a real run over the 12 sample PDFs produces the same findings and total as offline mode, the scanned invoice extracts correctly, and output that fails validation is rejected with a clear reason instead of stored.
 spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract/`, `lib/ingest/csv.ts`, `lib/audit/`, `scripts/audit-live/` (`pnpm audit:live`)

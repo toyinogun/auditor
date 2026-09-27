@@ -1,7 +1,7 @@
 # 0005. LLM classify and extract, one forced tool call per document
 
 **Date**: 2026-09-27 · updated 2026-09-27 (AC-10: a record the database refuses stores nothing)
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
