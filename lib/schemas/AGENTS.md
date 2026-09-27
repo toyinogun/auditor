@@ -4,7 +4,7 @@ The shared shapes every feature uses. Pure: no Next, DB, SDK or `fetch` imports.
 
 ## Files
 
-- `extraction.ts`: what a document prints, numbers kept as text. One shape per document type (invoice, contract, purchase order) plus the two CSV rows. These double as the Claude tool input and the offline JSON.
+- `extraction.ts`: what a document prints, numbers kept as text. One shape per document type (invoice, contract, purchase order) plus the two CSV rows. These double as the Claude tool input and the offline JSON. The CSV parsers that produce those rows live in `lib/ingest/csv.ts`.
 - `records.ts`: domain records in integer cents with their locators (`documentId`, `filename`, `lineNo`, `rowNo`), and `AuditInput`, what the checks read.
 - `convert.ts`: `to<Type>Record` maps extraction to record and enforces the arithmetic guard (lines, subtotal, rated charges, total).
 - `finding.ts`: `Finding` with its evidence, and `DecisionInput`.

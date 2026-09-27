@@ -36,6 +36,7 @@ pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
 pnpm exec drizzle-kit generate  # New SQL migration in drizzle/ after editing lib/db/schema.ts (applied at server start)
 pnpm generate:sample  # Rewrite public/sample/ from the fixture (committed output, never edit by hand)
 pnpm audit:sample  # Offline audit: reset $DATA_DIR/auditor.db, load the sample, run the checks, store the findings
+pnpm audit:live  # Live audit: Claude reads the 12 sample PDFs, must match offline mode to the cent (needs ANTHROPIC_API_KEY, 12 to 24 paid calls; --dump writes each extraction to $DATA_DIR/live-dump/)
 ```
 
 ## Specs
@@ -49,6 +50,7 @@ Stored in `docs/specs/`. Format: `docs/specs/NNNN-title/index.md`. Scope: `docs/
 - Folders follow the spec layout: one domain module per `lib/` folder, routes in `app/`, shadcn in `components/ui/`. Don't reorganize by feature or layer.
 - Expected failures return typed results (`{ ok: true, value } | { ok: false, error }`); throw only for bugs. Server Actions return the same shape.
 - Config comes only from `lib/env.ts`; never read `process.env` elsewhere. Never log document contents or secrets.
+- Log through `logEvent` in `lib/log.ts` (one JSON line per event, counts and outcomes only).
 - Named exports only, except where Next.js requires a default (`page`, `layout`, route files, config).
 - The brief's expected findings ($9,766.85 recoverable, 8 findings) are the acceptance test. Fix the code, never the numbers.
 - Tests first for `lib/` (Vitest, fixture data, in memory SQLite); UI is confirmed with `/check verify`.
@@ -85,6 +87,7 @@ Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-serve
 - [lib/schemas/AGENTS.md](lib/schemas/AGENTS.md): the shared Zod shapes, money in cents, converters and keys
 - [lib/db/AGENTS.md](lib/db/AGENTS.md): SQLite schema, migrations and the storage functions
 - [lib/checks/AGENTS.md](lib/checks/AGENTS.md): the six pure audit checks, `runChecks` and `summarizeFindings`
+- [lib/extract/AGENTS.md](lib/extract/AGENTS.md): one forced Claude tool call per PDF that classifies and extracts it, validated by the shared converters
 - [lib/audit/AGENTS.md](lib/audit/AGENTS.md): the offline audit run (`runSampleAudit`, `pnpm audit:sample`) and `runAudit`
 - [scripts/generate-sample/AGENTS.md](scripts/generate-sample/AGENTS.md): the sample data generator that renders `public/sample/` from the fixture
 
