@@ -1,7 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import {
+  loadSampleData as loadSampleIntoDb,
+  type SampleLoaded,
+} from "@/lib/audit/sample";
 import { getDb } from "@/lib/db/client";
-import { ingestDeps } from "@/lib/ingest/deps";
+import { ingestDeps, uploadStore } from "@/lib/ingest/deps";
 import {
   ingestFile,
   retryDocument,
@@ -11,9 +16,27 @@ import {
 import { err, type Result } from "@/lib/schemas/result";
 
 /**
- * The upload panel's Server Actions (spec 0006). They only turn the form into bytes; every
- * check, including the demo gate, lives in `ingestFile`.
+ * Server Actions. The upload panel's (spec 0006) only turn the form into bytes; every check,
+ * including the demo gate, lives in `ingestFile`. Load sample data is spec 0007's.
  */
+
+/**
+ * Rerenders every page and the app bar's decision count (spec 0007, AC-12). Every action that
+ * changes runs or decisions calls it, so the reload guard's count is never stale.
+ */
+export const revalidateAudit = async (): Promise<void> => {
+  revalidatePath("/", "layout");
+};
+
+/**
+ * The app bar's Load sample data (spec 0007, AC-12): replays the committed sample with no model
+ * call, in demo mode or not. Empties the uploads folder through the upload store only.
+ */
+export const loadSampleData = async (): Promise<Result<SampleLoaded>> => {
+  const result = await loadSampleIntoDb(getDb(), uploadStore());
+  if (result.ok) await revalidateAudit();
+  return result;
+};
 
 export type IngestActionResult = Result<IngestOutcome, IngestError>;
 

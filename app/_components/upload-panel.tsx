@@ -1,5 +1,6 @@
 "use client";
 
+import { RotateCwIcon, UploadIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState, type DragEvent } from "react";
 import {
@@ -7,7 +8,13 @@ import {
   uploadFile,
   type IngestActionResult,
 } from "@/app/actions";
+import { Chip } from "@/components/chip";
+import { Money } from "@/components/money";
+import { Button } from "@/components/ui/button";
+import type { Headline } from "@/lib/audit/headline";
+import { cn } from "@/lib/utils";
 import {
+  chipFor,
   mergeRows,
   type Row,
   type RowStatus,
@@ -15,9 +22,10 @@ import {
 } from "./upload-rows";
 
 /**
- * The temporary upload panel (spec 0006, AC-13): a drop zone that is also a button, one Server
- * Action call per file with at most 3 at once, one row per file, and the audit headline. The
- * server renders the stored list; this keeps rows for files in flight and merges each answer.
+ * The upload panel (spec 0006, AC-13; restyled by spec 0007, AC-14, wireframe 1d): a drop zone
+ * with one Choose files button, one Server Action call per file with at most 3 at once, one row
+ * per file with its status chip, and the audit headline. The server renders the stored list;
+ * this keeps rows for files in flight and merges each answer.
  */
 
 const MAX_PARALLEL_UPLOADS = 3;
@@ -25,7 +33,7 @@ const BYTES_PER_MB = 1_048_576;
 
 type UploadPanelProps = {
   readonly documents: readonly StoredDocumentRow[];
-  readonly headline: string;
+  readonly headline: Headline | null;
   readonly maxUploadMb: number;
 };
 
@@ -35,15 +43,6 @@ const KIND_LABEL: Readonly<Record<string, string>> = {
   purchase_order: "Purchase order",
   receipts_csv: "Receipts CSV",
   payments_csv: "Payments CSV",
-};
-
-const STATUS_STYLE: Readonly<Record<RowStatus, string>> = {
-  uploading: "bg-neutral-100 text-neutral-700",
-  done: "bg-emerald-100 text-emerald-800",
-  "already ingested": "bg-sky-100 text-sky-800",
-  "in progress": "bg-amber-100 text-amber-800",
-  failed: "bg-red-100 text-red-800",
-  refused: "bg-red-100 text-red-800",
 };
 
 /** The row a file shows once its action answers. */
@@ -175,8 +174,8 @@ export function UploadPanel({
   const rows = mergeRows(local, documents);
 
   return (
-    <section aria-labelledby="upload-heading" className="mt-8">
-      <h2 id="upload-heading" className="text-lg font-semibold">
+    <section aria-labelledby="upload-heading" className="flex flex-col gap-6">
+      <h2 id="upload-heading" className="sr-only">
         Upload documents
       </h2>
       <div
@@ -186,23 +185,17 @@ export function UploadPanel({
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
-        className={`mt-3 rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-          dragging ? "border-sky-500 bg-sky-50" : "border-neutral-300"
-        }`}
+        data-dragging={dragging || undefined}
+        className={cn(
+          "flex flex-col items-center gap-3 rounded-md border border-dashed border-outline bg-neutral px-8 py-10 text-center text-on-surface-muted",
+          "transition-colors duration-(--duration-quick) ease-out",
+          "data-dragging:border-solid data-dragging:border-primary-deeper data-dragging:bg-secondary data-dragging:text-primary-deeper",
+        )}
       >
-        <p className="text-neutral-600">
-          Drop invoices, contracts, purchase orders and the two CSVs here.
-        </p>
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="mt-3 rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 focus-visible:outline-none"
-        >
-          Choose files
-        </button>
-        <p className="mt-2 text-xs text-neutral-500">
-          PDF or CSV, up to {maxUploadMb} MB each.
-        </p>
+        <UploadIcon aria-hidden="true" className="size-5" strokeWidth={1.5} />
+        <p>Drop invoices, contracts, purchase orders and the two CSVs here.</p>
+        <Button onClick={() => inputRef.current?.click()}>Choose files</Button>
+        <p className="type-caption">PDF or CSV, up to {maxUploadMb} MB each.</p>
         <input
           ref={inputRef}
           type="file"
@@ -218,46 +211,81 @@ export function UploadPanel({
         />
       </div>
 
-      <ul aria-live="polite" className="mt-4 divide-y divide-neutral-200">
-        {rows.map((row) => (
-          <li
-            key={row.key}
-            className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2"
-          >
-            <span className="font-medium break-all">{row.filename}</span>
-            {row.kind && (
-              <span className="text-sm text-neutral-500">
-                {KIND_LABEL[row.kind] ?? row.kind}
-              </span>
-            )}
-            <span
-              className={`rounded px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[row.status]}`}
-            >
-              {row.status}
-            </span>
-            {row.status === "failed" && row.documentId !== null && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (row.documentId !== null)
-                    retry(row.documentId, row.filename);
-                }}
-                aria-label={`Retry ${row.filename}`}
-                className="ml-auto rounded-md border border-neutral-300 px-2 py-0.5 text-xs font-medium hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:outline-none"
-              >
-                Retry
-              </button>
-            )}
-            {row.reason && (
-              <span className="w-full text-sm text-red-700">{row.reason}</span>
-            )}
-          </li>
-        ))}
-      </ul>
+      <div className="flex flex-col">
+        <div className="flex h-8 items-center justify-between border-b border-border type-label-caps text-on-surface-muted">
+          <span>Files</span>
+          <span className="type-data-md">{rows.length}</span>
+        </div>
+        {rows.length === 0 ? (
+          <p className="py-6 text-on-surface-muted">
+            No documents yet. Drop files above, or press Load sample data in the
+            bar to fill the audit with the fictional sample.
+          </p>
+        ) : (
+          <ul aria-live="polite">
+            {rows.map((row) => (
+              <FileRow key={row.key} row={row} onRetry={retry} />
+            ))}
+          </ul>
+        )}
+      </div>
 
-      <p className="mt-4 font-medium" aria-live="polite">
-        {headline}
+      <p className="type-headline-sm" aria-live="polite">
+        <HeadlineLine headline={headline} />
       </p>
     </section>
+  );
+}
+
+type FileRowProps = {
+  readonly row: Row;
+  readonly onRetry: (documentId: number, filename: string) => void;
+};
+
+function FileRow({ row, onRetry }: FileRowProps) {
+  const chip = chipFor(row.status);
+  const { documentId } = row;
+  return (
+    <li className="flex min-h-row-height flex-wrap items-center gap-x-3 gap-y-1 border-b border-border py-1.5">
+      <span className="type-data-md break-all text-on-surface">
+        {row.filename}
+      </span>
+      {row.kind && (
+        <span className="text-on-surface-muted">
+          {KIND_LABEL[row.kind] ?? row.kind}
+        </span>
+      )}
+      <span className="ml-auto flex items-center gap-2">
+        {row.status === "failed" && documentId !== null && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onRetry(documentId, row.filename)}
+            aria-label={`Retry ${row.filename}`}
+          >
+            <RotateCwIcon aria-hidden="true" />
+            Retry
+          </Button>
+        )}
+        <Chip state={chip.state} label={chip.label} spin={chip.spin} />
+      </span>
+      {row.reason && (
+        <span className="w-full type-caption text-error">{row.reason}</span>
+      )}
+    </li>
+  );
+}
+
+/** "8 findings, $9,766.85 recoverable of $53,939.60 invoiced (18.1%)", amounts in `Money`. */
+function HeadlineLine({ headline }: { readonly headline: Headline | null }) {
+  if (headline === null) return <>No audit yet</>;
+  const findings = headline.findingCount === 1 ? "finding" : "findings";
+  return (
+    <>
+      {headline.findingCount} {findings},{" "}
+      <Money cents={headline.recoverableCents} strong /> recoverable of{" "}
+      <Money cents={headline.invoicedTotalCents} strong /> invoiced (
+      <span className="type-data-md-strong">{headline.recoverableShare}</span>)
+    </>
   );
 }

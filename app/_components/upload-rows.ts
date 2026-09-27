@@ -1,3 +1,5 @@
+import type { ChipState } from "@/components/chip";
+
 /**
  * The upload panel's row model (spec 0006, AC-13): the rows the server stores, the rows kept in
  * the browser for files in flight, and how the two lists merge. Pure, so it is unit tested.
@@ -77,3 +79,25 @@ export const mergeRows = (
   });
   return [...pending, ...fromServer];
 };
+
+export type RowChip = {
+  readonly state: ChipState;
+  readonly label: RowStatus;
+  readonly spin: boolean;
+};
+
+const CHIP_STATE: Readonly<Record<RowStatus, ChipState>> = {
+  done: "approved",
+  "already ingested": "approved",
+  uploading: "working",
+  "in progress": "working",
+  failed: "rejected",
+  refused: "rejected",
+};
+
+/** A row status as a chip (spec 0007, AC-14): the chip look, keeping the status's own word. */
+export const chipFor = (status: RowStatus): RowChip => ({
+  state: CHIP_STATE[status],
+  label: status,
+  spin: status === "uploading",
+});

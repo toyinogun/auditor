@@ -1,0 +1,98 @@
+/*
+ * Design token values (spec 0007, AC-1). Seed written from DESIGN.md; a Claude Design export
+ * replaces this file verbatim. Only app/globals.css imports it, and only its mapping layer reads
+ * these --ds- names. The drift test checks every value against DESIGN.md.
+ */
+:root {
+  /* Colors */
+  --ds-color-primary: #2ec4b6;
+  --ds-color-primary-hover: #27b1a8;
+  --ds-color-primary-deep: #016968;
+  --ds-color-primary-deeper: #044e50;
+  --ds-color-secondary: #cbf3f0;
+  --ds-color-tertiary: #ff9f1c;
+  --ds-color-tertiary-soft: #ffbf69;
+  --ds-color-tertiary-wash: #fff5e3;
+  --ds-color-tertiary-deep: #90531d;
+  --ds-color-surface: #ffffff;
+  --ds-color-on-surface: #112123;
+  --ds-color-on-surface-muted: #526162;
+  --ds-color-outline: #838f90;
+  --ds-color-border: #d9e1e2;
+  --ds-color-neutral: #f4f9f9;
+  --ds-color-neutral-well: #eaf2f2;
+  --ds-color-error: #a44120;
+  --ds-color-error-wash: #ffefe8;
+
+  /* Radii */
+  --ds-radius-xs: 2px;
+  --ds-radius-sm: 4px;
+  --ds-radius-md: 6px;
+  --ds-radius-lg: 10px;
+
+  /* Layout spacing */
+  --ds-space-base: 4px;
+  --ds-space-row-height: 36px;
+  --ds-space-gutter: 24px;
+  --ds-space-page-margin: 32px;
+  --ds-space-app-max-width: 1440px;
+  --ds-space-measure: 68ch;
+
+  /* Typography: size, line height, tracking, weight per role */
+  --ds-type-display-xl-size: 88px;
+  --ds-type-display-xl-leading: 1;
+  --ds-type-display-xl-tracking: -0.025em;
+  --ds-type-display-xl-weight: 400;
+  --ds-type-display-size: 48px;
+  --ds-type-display-leading: 1.05;
+  --ds-type-display-tracking: -0.015em;
+  --ds-type-display-weight: 400;
+  --ds-type-headline-lg-size: 32px;
+  --ds-type-headline-lg-leading: 1.15;
+  --ds-type-headline-lg-tracking: -0.01em;
+  --ds-type-headline-lg-weight: 400;
+  --ds-type-headline-md-size: 20px;
+  --ds-type-headline-md-leading: 1.3;
+  --ds-type-headline-md-tracking: -0.005em;
+  --ds-type-headline-md-weight: 600;
+  --ds-type-headline-sm-size: 16px;
+  --ds-type-headline-sm-leading: 1.35;
+  --ds-type-headline-sm-tracking: 0em;
+  --ds-type-headline-sm-weight: 600;
+  --ds-type-body-lg-size: 17px;
+  --ds-type-body-lg-leading: 1.6;
+  --ds-type-body-lg-tracking: 0em;
+  --ds-type-body-lg-weight: 400;
+  --ds-type-body-md-size: 14px;
+  --ds-type-body-md-leading: 1.5;
+  --ds-type-body-md-tracking: 0em;
+  --ds-type-body-md-weight: 400;
+  --ds-type-body-sm-size: 13px;
+  --ds-type-body-sm-leading: 1.45;
+  --ds-type-body-sm-tracking: 0.005em;
+  --ds-type-body-sm-weight: 400;
+  --ds-type-label-md-size: 13px;
+  --ds-type-label-md-leading: 1.3;
+  --ds-type-label-md-tracking: 0.005em;
+  --ds-type-label-md-weight: 600;
+  --ds-type-label-caps-size: 11px;
+  --ds-type-label-caps-leading: 1.3;
+  --ds-type-label-caps-tracking: 0.08em;
+  --ds-type-label-caps-weight: 600;
+  --ds-type-caption-size: 12px;
+  --ds-type-caption-leading: 1.4;
+  --ds-type-caption-tracking: 0.01em;
+  --ds-type-caption-weight: 400;
+  --ds-type-data-lg-size: 22px;
+  --ds-type-data-lg-leading: 1.2;
+  --ds-type-data-lg-tracking: -0.01em;
+  --ds-type-data-lg-weight: 400;
+  --ds-type-data-md-size: 13px;
+  --ds-type-data-md-leading: 1.45;
+  --ds-type-data-md-tracking: 0em;
+  --ds-type-data-md-weight: 400;
+  --ds-type-data-md-strong-size: 13px;
+  --ds-type-data-md-strong-leading: 1.45;
+  --ds-type-data-md-strong-tracking: 0em;
+  --ds-type-data-md-strong-weight: 600;
+}

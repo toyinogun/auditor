@@ -1,1 +1,278 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "./styles/design-tokens.css";
+
+/*
+ * The mapping layer (spec 0007, AC-2, AC-3, AC-5). Token values live in
+ * `./styles/design-tokens.css` (a Claude Design export, or the seed). This file is the only place
+ * that reads its `--ds-` names: after a reimport, edit only the right hand side of each `var()`
+ * here. Components use the utilities these produce, never a raw token variable.
+ * Light mode only: no `.dark` block and no `dark:` variants.
+ */
+
+@theme inline static {
+  /* Only the DESIGN.md palette; Tailwind's default colors are removed. */
+  --color-*: initial;
+  --color-primary: var(--ds-color-primary);
+  --color-primary-hover: var(--ds-color-primary-hover);
+  --color-primary-deep: var(--ds-color-primary-deep);
+  --color-primary-deeper: var(--ds-color-primary-deeper);
+  --color-secondary: var(--ds-color-secondary);
+  --color-tertiary: var(--ds-color-tertiary);
+  --color-tertiary-soft: var(--ds-color-tertiary-soft);
+  --color-tertiary-wash: var(--ds-color-tertiary-wash);
+  --color-tertiary-deep: var(--ds-color-tertiary-deep);
+  --color-surface: var(--ds-color-surface);
+  --color-on-surface: var(--ds-color-on-surface);
+  --color-on-surface-muted: var(--ds-color-on-surface-muted);
+  --color-outline: var(--ds-color-outline);
+  --color-border: var(--ds-color-border);
+  --color-neutral: var(--ds-color-neutral);
+  --color-neutral-well: var(--ds-color-neutral-well);
+  --color-error: var(--ds-color-error);
+  --color-error-wash: var(--ds-color-error-wash);
+
+  /* shadcn's names, so a component added later still renders on the palette (AC-3). */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Radii: xs to lg from the tokens; none and full are Tailwind's. */
+  --radius-xs: var(--ds-radius-xs);
+  --radius-sm: var(--ds-radius-sm);
+  --radius-md: var(--ds-radius-md);
+  --radius-lg: var(--ds-radius-lg);
+
+  /* Layout names; Tailwind's 4px spacing step stays as spacing.base. */
+  --spacing-row-height: var(--ds-space-row-height);
+  --spacing-gutter: var(--ds-space-gutter);
+  --spacing-page: var(--ds-space-page-margin);
+  --container-app: var(--ds-space-app-max-width);
+  --container-measure: var(--ds-space-measure);
+
+  /* Faces from app/fonts.ts with the DESIGN.md fallback stacks. */
+  --font-sans:
+    var(--font-plex-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-serif: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
+
+  /* Elevation and motion from DESIGN.md prose (Elevation, Components: Motion). */
+  --shadow-float:
+    0 1px 2px rgba(17, 33, 35, 0.1), 0 8px 24px rgba(17, 33, 35, 0.12);
+  --color-backdrop: rgba(17, 33, 35, 0.32);
+  --ease-enter: cubic-bezier(0.2, 0, 0, 1);
+  --duration-quick: 120ms;
+  --duration-enter: 180ms;
+}
+
+/* shadcn aliases (AC-3); where a name collides with DESIGN.md, DESIGN.md wins. */
+:root {
+  --background: var(--color-surface);
+  --foreground: var(--color-on-surface);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-on-surface);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-on-surface);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-on-surface);
+  --secondary: var(--color-secondary);
+  --secondary-foreground: var(--color-primary-deeper);
+  --muted: var(--color-neutral);
+  --muted-foreground: var(--color-on-surface-muted);
+  --accent: var(--color-neutral-well);
+  --accent-foreground: var(--color-on-surface);
+  --destructive: var(--color-error);
+  --border: var(--color-border);
+  --input: var(--color-outline);
+  --ring: var(--color-primary-deep);
+  --radius: var(--radius-md);
+}
+
+/* One utility per DESIGN.md typography role (AC-2, AC-6): family, size, leading, tracking, weight, features. */
+@utility type-display-xl {
+  font-family: var(--font-serif);
+  font-size: var(--ds-type-display-xl-size);
+  line-height: var(--ds-type-display-xl-leading);
+  letter-spacing: var(--ds-type-display-xl-tracking);
+  font-weight: var(--ds-type-display-xl-weight);
+  font-synthesis: none;
+}
+
+@utility type-display {
+  font-family: var(--font-serif);
+  font-size: var(--ds-type-display-size);
+  line-height: var(--ds-type-display-leading);
+  letter-spacing: var(--ds-type-display-tracking);
+  font-weight: var(--ds-type-display-weight);
+  font-synthesis: none;
+}
+
+@utility type-headline-lg {
+  font-family: var(--font-serif);
+  font-size: var(--ds-type-headline-lg-size);
+  line-height: var(--ds-type-headline-lg-leading);
+  letter-spacing: var(--ds-type-headline-lg-tracking);
+  font-weight: var(--ds-type-headline-lg-weight);
+  font-synthesis: none;
+}
+
+@utility type-headline-md {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-headline-md-size);
+  line-height: var(--ds-type-headline-md-leading);
+  letter-spacing: var(--ds-type-headline-md-tracking);
+  font-weight: var(--ds-type-headline-md-weight);
+}
+
+@utility type-headline-sm {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-headline-sm-size);
+  line-height: var(--ds-type-headline-sm-leading);
+  letter-spacing: var(--ds-type-headline-sm-tracking);
+  font-weight: var(--ds-type-headline-sm-weight);
+}
+
+@utility type-body-lg {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-lg-size);
+  line-height: var(--ds-type-body-lg-leading);
+  letter-spacing: var(--ds-type-body-lg-tracking);
+  font-weight: var(--ds-type-body-lg-weight);
+}
+
+@utility type-body-md {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-md-size);
+  line-height: var(--ds-type-body-md-leading);
+  letter-spacing: var(--ds-type-body-md-tracking);
+  font-weight: var(--ds-type-body-md-weight);
+}
+
+@utility type-body-sm {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-body-sm-size);
+  line-height: var(--ds-type-body-sm-leading);
+  letter-spacing: var(--ds-type-body-sm-tracking);
+  font-weight: var(--ds-type-body-sm-weight);
+}
+
+@utility type-label-md {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-label-md-size);
+  line-height: var(--ds-type-label-md-leading);
+  letter-spacing: var(--ds-type-label-md-tracking);
+  font-weight: var(--ds-type-label-md-weight);
+}
+
+@utility type-label-caps {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-label-caps-size);
+  line-height: var(--ds-type-label-caps-leading);
+  letter-spacing: var(--ds-type-label-caps-tracking);
+  font-weight: var(--ds-type-label-caps-weight);
+  font-feature-settings: "case" 1;
+  text-transform: uppercase;
+}
+
+@utility type-caption {
+  font-family: var(--font-sans);
+  font-size: var(--ds-type-caption-size);
+  line-height: var(--ds-type-caption-leading);
+  letter-spacing: var(--ds-type-caption-tracking);
+  font-weight: var(--ds-type-caption-weight);
+}
+
+@utility type-data-lg {
+  font-family: var(--font-mono);
+  font-size: var(--ds-type-data-lg-size);
+  line-height: var(--ds-type-data-lg-leading);
+  letter-spacing: var(--ds-type-data-lg-tracking);
+  font-weight: var(--ds-type-data-lg-weight);
+  font-feature-settings:
+    "tnum" 1,
+    "zero" 1;
+}
+
+@utility type-data-md {
+  font-family: var(--font-mono);
+  font-size: var(--ds-type-data-md-size);
+  line-height: var(--ds-type-data-md-leading);
+  letter-spacing: var(--ds-type-data-md-tracking);
+  font-weight: var(--ds-type-data-md-weight);
+  font-feature-settings:
+    "tnum" 1,
+    "zero" 1;
+}
+
+@utility type-data-md-strong {
+  font-family: var(--font-mono);
+  font-size: var(--ds-type-data-md-strong-size);
+  line-height: var(--ds-type-data-md-strong-leading);
+  letter-spacing: var(--ds-type-data-md-strong-tracking);
+  font-weight: var(--ds-type-data-md-strong-weight);
+  font-feature-settings:
+    "tnum" 1,
+    "zero" 1;
+}
+@layer base {
+  html {
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+  }
+
+  body {
+    @apply type-body-md;
+    min-height: 100dvh;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+
+  /* AC-16: a 2px Deep Lagoon ring with a 2px White offset on every focusable element. */
+  :focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 2px var(--color-surface),
+      0 0 0 4px var(--color-primary-deep);
+  }
+
+  a {
+    color: var(--color-primary-deep);
+  }
+
+  ::selection {
+    background-color: var(--color-secondary);
+    color: var(--color-on-surface);
+  }
+
+  /* AC-16: every transition and animation is instant when motion is reduced. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

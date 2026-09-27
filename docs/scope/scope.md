@@ -26,7 +26,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 6 | Offline audit run | Release 1 | done |
 | 7 | LLM classify & extract | Release 2 | done |
 | 8 | Upload & ingest | Release 2 | done |
-| 9 | Design system & UI foundation | Release 3 | planned |
+| 9 | Design system & UI foundation | Release 3 | done |
 | 10 | Review screen | Release 3 | planned |
 | 11 | Export | Release 3 | planned |
 | 12 | n8n Drive intake | Release 4 | planned |
@@ -130,19 +130,28 @@ spec [0006](../specs/0006-upload-ingest/index.md) · code in `lib/ingest/`, `app
 
 An analyst can now judge every finding and hand over a claim list.
 
-### 9. Design system & UI foundation · needs a decision
+### 9. Design system & UI foundation · done
 A calm, credible finance tool look: type, color, spacing, tables, tiles, and base components, so the review screen and landing page feel like one real product.
 **Done when:** `design.md` covers type, color, spacing and the core components, and the base components render in the scaffold.
-- [ ] Design it (spec): `/architect design system & UI foundation`
+spec [0007](../specs/0007-design-system-ui-foundation/index.md) · code in `app/styles/`, `app/globals.css`, `app/(app)/`, `app/styleguide/`, `components/` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1a app bar, 1d documents, 1j empty state)
+- [x] Design it (spec): `/architect design system & UI foundation`
+- [x] Build it: `/develop design system & UI foundation`
+  - [x] DESIGN.md committed with `design:lint`, the token seed, mapping layer, fonts and drift test, shadcn init with the Button (AC-1 to AC-6, AC-16, AC-17)
+  - [x] Thin whole: Money, SummaryTile, Chip, AppBar, the `(app)` shell, `/` redirect, `/review` stub, Load sample data with its reload guard (AC-8, AC-10 to AC-13)
+  - [x] Remaining primitives and `/styleguide` (AC-7, AC-9)
+  - [x] `/documents` move and restyle, source guards, full green pass (AC-14, AC-15, AC-18)
+- [x] Verify it: `/check verify design system & UI foundation`
 
 ### 10. Review screen · needs a decision
 Summary tiles (recoverable, approved, pending, % of invoiced), findings sorted by amount, and a detail panel showing the invoice with flagged lines highlighted beside contract price and quantity received. Approve or Reject, with a reason required to reject. Holds the "Load sample data" button.
 **Done when:** on the sample data the tiles show $9,766.85 recoverable and 18.1% of invoiced, findings list largest first, each detail shows its evidence, rejecting without a reason is blocked, and decisions survive a reload.
+wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (options 1a split pane, 1b ledger, 1c queue; 1f reject dialog)
 - [ ] Design it (spec): `/architect review screen`
 
 ### 11. Export
 The finding log as `.xlsx` and `.csv`, including the analyst's decisions and a total row.
 **Done when:** both files open cleanly, list every finding with its evidence and decision, and the total row matches the review screen after approvals and rejections.
+wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1g export menu, 1h claim preview)
 - [ ] Build it: `/develop export`
 
 ## Release 4: Intake and launch
@@ -157,6 +166,7 @@ An n8n workflow that watches a Google Drive folder and posts each new file to th
 ### 13. Landing page & social card · needs a decision
 A short public front page leading with the headline result ("read 12 documents and found $9,766.85 of overpayments in under a minute"), a "Try the demo" button, page metadata, and a link preview image for sharing on Upwork.
 **Done when:** the page loads fast, states the result and who it is for, links straight into the demo, and a shared link shows a proper title, description and preview image.
+wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (3a hero + features, 1i landing, 1k social card)
 - [ ] Design it (spec): `/architect landing page & social card`
 
 ### 14. Public demo deploy · needs a decision
