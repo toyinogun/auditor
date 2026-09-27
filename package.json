@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "generate:sample": "tsx scripts/generate-sample/index.ts",
     "audit:sample": "tsx --conditions=react-server scripts/audit-sample/index.ts",
+    "audit:live": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/audit-live/index.ts",
     "prepare": "husky"
   },
   "lint-staged": {
