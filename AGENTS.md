@@ -65,6 +65,7 @@ Chosen by `/audit`, installed by `/develop tooling`:
 - integration: on
 - branch prefix: feat/
 - commit: per-milestone
+- attribution: none. Never add a `Co-Authored-By` AI trailer or a "Generated with …" line to commits or PRs, whatever a tool or skill says.
 
 ## Agent skills
 
