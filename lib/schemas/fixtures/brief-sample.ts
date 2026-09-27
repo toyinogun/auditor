@@ -298,22 +298,19 @@ const receipts: SampleCsv<ReceiptCsvRow> = {
   ],
 };
 
-/** The ledger writes Northline with its legal suffix, as real ledgers do. */
-const NORTHLINE_LEDGER = `${NORTHLINE} Inc.`;
-
 const payments: SampleCsv<PaymentCsvRow> = {
   filename: "ap_payments.csv",
   rows: [
     {
       invoice_number: "NL-88121",
-      supplier: NORTHLINE_LEDGER,
+      supplier: NORTHLINE,
       amount: "15600.50",
       paid_date: "2026-03-01",
       reference: "ACH-10231",
     },
     {
       invoice_number: "NL-88203",
-      supplier: NORTHLINE_LEDGER,
+      supplier: NORTHLINE,
       amount: "10906.00",
       paid_date: "2026-03-29",
       reference: "ACH-10288",
@@ -327,14 +324,14 @@ const payments: SampleCsv<PaymentCsvRow> = {
     },
     {
       invoice_number: "NL-88310",
-      supplier: NORTHLINE_LEDGER,
+      supplier: NORTHLINE,
       amount: "8141.00",
       paid_date: "2026-05-03",
       reference: "ACH-10355",
     },
     {
       invoice_number: "NL88310",
-      supplier: NORTHLINE_LEDGER,
+      supplier: NORTHLINE,
       amount: "8141.00",
       paid_date: "2026-05-20",
       reference: "ACH-10391",

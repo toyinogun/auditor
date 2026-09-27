@@ -124,7 +124,7 @@ describe("the brief sample", () => {
     });
   });
 
-  it("reads the Northline ledger name and the Brightwater contract to their supplier keys", () => {
+  it("reads payments and contracts to the same supplier keys", () => {
     const input = convertSample();
     expect(new Set(input.payments.map((p) => p.supplierKey))).toEqual(
       new Set(["northline industrial supply", "brightwater packaging"]),
@@ -287,8 +287,12 @@ describe("toContractRecord", () => {
 });
 
 describe("CSV rows", () => {
-  it("reads a payment with a blank reference as null", () => {
-    const row = { ...BRIEF_SAMPLE.payments.rows[0], reference: " " };
+  it("reads a blank reference as null and keys a suffixed supplier name", () => {
+    const row = {
+      ...BRIEF_SAMPLE.payments.rows[0],
+      supplier: "Northline Industrial Supply Inc.",
+      reference: " ",
+    };
     expect(valueOf(toPaymentRecord(row, ref, 1))).toMatchObject({
       rowNo: 1,
       invoiceNumber: "NL-88121",
