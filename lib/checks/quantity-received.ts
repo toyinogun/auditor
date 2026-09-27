@@ -15,7 +15,7 @@ import {
   lineLocator,
   MINUS,
   rowLocator,
-  sumCents,
+  sumQuantities,
   TIMES,
 } from "./evidence";
 
@@ -37,7 +37,7 @@ const linesOf = (invoice: InvoiceRecord, sku: string): readonly BilledLine[] =>
     .map((line) => ({ invoice, line }));
 
 const quantityOf = (lines: readonly BilledLine[]): number =>
-  sumCents(lines.map(({ line }) => line.quantity));
+  sumQuantities(lines.map(({ line }) => line.quantity));
 
 /** Contract price in force for the SKU, else the lowest billed price on this invoice. */
 const priceUsed = (
@@ -117,7 +117,7 @@ const skuFinding = (
 ): Finding | null => {
   const here = linesOf(invoice, sku);
   const earlier = earlierInvoices.flatMap((prior) => linesOf(prior, sku));
-  const received = sumCents(
+  const received = sumQuantities(
     ctx.receiptsFor(po.poNumber, sku).map((r) => r.quantityReceived),
   );
   const billedBefore = quantityOf(earlier);

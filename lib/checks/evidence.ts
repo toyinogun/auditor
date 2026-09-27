@@ -27,8 +27,11 @@ export const amountsTerm = (amounts: readonly number[]): string =>
     ? formatCents(amounts[0])
     : `(${amounts.map(formatCents).join(" + ")})`;
 
-export const sumCents = (amounts: readonly number[]): number =>
-  amounts.reduce((total, amount) => total + amount, 0);
+const sum = (values: readonly number[]): number =>
+  values.reduce((total, value) => total + value, 0);
+
+export const sumCents: (amounts: readonly number[]) => number = sum;
+export const sumQuantities: (quantities: readonly number[]) => number = sum;
 
 export const lineLocator = (lineNo: number): string => `line ${lineNo}`;
 export const chargeLocator = (lineNo: number): string =>
