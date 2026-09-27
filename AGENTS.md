@@ -93,6 +93,7 @@ Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-serve
 - [lib/checks/AGENTS.md](lib/checks/AGENTS.md): the six pure audit checks, `runChecks` and `summarizeFindings`
 - [lib/extract/AGENTS.md](lib/extract/AGENTS.md): one forced Claude tool call per PDF that classifies and extracts it, validated by the shared converters
 - [lib/audit/AGENTS.md](lib/audit/AGENTS.md): the offline audit run (`runSampleAudit`, `pnpm audit:sample`) and `runAudit`
+- [lib/export/AGENTS.md](lib/export/AGENTS.md): the pure `.xlsx` and `.csv` writers over one row model, with the csv formula guard
 - [lib/ingest/AGENTS.md](lib/ingest/AGENTS.md): the one intake path (`ingestFile`) behind the upload action and the `/api/ingest` webhook, with its guards and demo gate
 - [scripts/generate-sample/AGENTS.md](scripts/generate-sample/AGENTS.md): the sample data generator that renders `public/sample/` from the fixture
 

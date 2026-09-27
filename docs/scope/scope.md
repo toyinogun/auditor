@@ -28,7 +28,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 8 | Upload & ingest | Release 2 | done |
 | 9 | Design system & UI foundation | Release 3 | done |
 | 10 | Review screen | Release 3 | done |
-| 11 | Export | Release 3 | planned |
+| 11 | Export | Release 3 | done |
 | 12 | n8n Drive intake | Release 4 | planned |
 | 13 | Landing page & social card | Release 4 | planned |
 | 14 | Public demo deploy | Release 4 | planned |
@@ -154,11 +154,17 @@ spec [0008](../specs/0008-review-screen/index.md) · code in `app/(app)/review/`
   - [x] Logging and full green pass: `finding_decided` event, typecheck, lint, test, build, design lint (AC-15, AC-17)
 - [x] Verify it: `/check verify review screen`
 
-### 11. Export
+### 11. Export · done
 The finding log as `.xlsx` and `.csv`, including the analyst's decisions and a total row.
 **Done when:** both files open cleanly, list every finding with its evidence and decision, and the total row matches the review screen after approvals and rejections.
-wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1g export menu, 1h claim preview)
-- [ ] Build it: `/develop export`
+spec [0009](../specs/0009-export/index.md) · code in `lib/export/`, `lib/audit/export.ts`, `app/api/export/` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1g export menu chosen; 1h claim preview deferred)
+- [x] Design it (spec): `/architect export`
+- [x] Build it: `/develop export`
+  - [x] Pure pieces: labels, money and time formatting, file name, `exportTable`, the csv writer with BOM, quoting and formula guard (AC-4 to AC-8, AC-10, AC-11)
+  - [x] Thin whole: `readExport` and `handleExportRequest`, `/api/export`, the Export menu in the app bar, csv end to end (AC-1, AC-3, AC-12, AC-13)
+  - [x] Excel: `exceljs`, the Findings and Summary sheets, round trip test (AC-7 to AC-9, AC-13)
+  - [x] Edges and green pass: disabled Export with tooltip, 400 and 404, `export` log event, demo mode, full checks (AC-2, AC-3, AC-14 to AC-16)
+- [x] Verify it: `/check verify export`
 
 ## Release 4: Intake and launch
 
@@ -196,6 +202,8 @@ Out of scope for this build, kept so the plan stays honest.
 - **Error monitoring**: report crashes on the public demo · needs a decision
 - **Visitor analytics**: count visits and sample loads · needs a decision
 - **Per visitor demo decisions**: isolate each visitor's approvals on the public demo instead of one shared audit (or a nightly reset) · from spec 0008
+- **Claim preview page**: wireframe 1h, the claim table and totals on screen with the two downloads · from spec 0009
+- **Approved only claim sheet**: a file holding just the approved recover findings, ready to send a supplier · from spec 0009
 - **Large runs on the review screen**: cap or paginate the findings table and load one invoice with a targeted query once a run holds hundreds of findings · from spec 0008
 
 ## Legend
