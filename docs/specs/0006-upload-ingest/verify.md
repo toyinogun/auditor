@@ -11,7 +11,7 @@ Setup: `DATA_DIR=<scratch>`, `INGEST_SECRET=<64 chars>`, then `pnpm build && pnp
 - [x] Upload `receipts.csv` again → row shows `already ingested`, no new row after reload → AC-8
 - [x] With a key set, upload `NL-88121.pdf` → `uploading` then `done`, kind Invoice, headline refreshes → AC-1, AC-12
 - [x] With no key, upload a PDF → `failed` with `ANTHROPIC_API_KEY is not set` and a Retry button; Retry fails again cleanly; set the key, restart, Retry → `done` → AC-9, AC-10
-- [ ] Upload all 12 PDFs and both CSVs (key set) in any order → headline reads `8 findings, $9,766.85 recoverable of $53,939.60 invoiced (18.1%)` → AC-12, value sourcing (headline, percent, money text)
+- [x] Upload all 12 PDFs and both CSVs (key set) in any order → headline reads `8 findings, $9,766.85 recoverable of $53,939.60 invoiced (18.1%)` → AC-12, value sourcing (headline, percent, money text)
 - [x] Pick a file over `MAX_UPLOAD_MB` → `refused` with `the file is larger than 10 MB`, no request sent → AC-5
 - [x] `DEMO_MODE=true`, no key: upload the 14 sample files → same brief headline, no `extraction` log lines; upload any other PDF → `refused` with `on the demo, only the sample files can be uploaded`, and `${DATA_DIR}/uploads/` gets no new file → AC-7
 
