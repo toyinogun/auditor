@@ -165,3 +165,10 @@ export const decide = (
     .run();
   return ok(decision);
 };
+
+export type AuditRunRow = typeof auditRuns.$inferSelect;
+
+/** The newest audit run, or null before the first one (spec 0006, the headline). */
+export const latestAuditRun = (db: Db): AuditRunRow | null =>
+  db.select().from(auditRuns).orderBy(desc(auditRuns.id)).limit(1).get() ??
+  null;

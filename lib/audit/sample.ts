@@ -3,6 +3,7 @@ import { resetAll } from "@/lib/db/admin";
 import type { Db } from "@/lib/db/client";
 import { BRIEF_SAMPLE } from "@/lib/schemas/fixtures/brief-sample";
 import { briefSampleRecords } from "@/lib/schemas/fixtures/brief-sample-records";
+import type { UploadStore } from "@/lib/ingest/files";
 import { SampleManifest } from "@/lib/schemas/sample-manifest";
 import manifestJson from "@/public/sample/manifest.json";
 import { runAudit, type AuditRunResult } from "./run";
@@ -45,3 +46,19 @@ export const runSampleAudit = (
     );
     return runAudit(db, clock);
   });
+
+/**
+ * The clean start (spec 0006, AC-14): `runSampleAudit`, then empties the uploads folder once its
+ * transaction has committed. A load that throws leaves the files in place. `pnpm audit:sample`
+ * and Load sample data (Feature 10) call this.
+ */
+export const loadSample = async (
+  db: Db,
+  files: Pick<UploadStore, "clear">,
+  clock: () => number = Date.now,
+  manifest: ManifestFiles = SAMPLE_MANIFEST,
+): Promise<AuditRunResult> => {
+  const run = runSampleAudit(db, clock, manifest);
+  await files.clear();
+  return run;
+};

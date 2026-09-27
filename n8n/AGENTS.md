@@ -20,6 +20,7 @@ Holds the n8n workflow that watches a Google Drive folder and sends each new fil
 
 - `/api/ingest` checks `X-Ingest-Secret` against `INGEST_SECRET` with a constant time compare, and rejects files over `MAX_UPLOAD_MB` before reading the body.
 - The same file arriving by upload and by n8n dedupes on its SHA-256, so resending is safe.
+- Send the file as one multipart field named `file`, with a `Content-Length` header (`411` without it). Error answers are `{ ok: false, error, documentId }`; a `422` means the document is stored as `failed` and can be retried (spec 0006).
 
 ## Agent skills
 

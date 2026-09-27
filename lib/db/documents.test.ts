@@ -1,6 +1,15 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { openDb, type Db } from "./client";
-import { insertDocument, setDocumentStatus } from "./documents";
+import {
+  claimDocument,
+  DOCUMENT_LIST_LIMIT,
+  failInterrupted,
+  getDocument,
+  INTERRUPTED_REASON,
+  insertDocument,
+  listDocuments,
+  setDocumentStatus,
+} from "./documents";
 import { documents } from "./schema";
 import { TEST_NOW } from "./testing";
 
@@ -81,5 +90,113 @@ describe("setDocumentStatus", () => {
       ok: false,
       error: "document 42 does not exist",
     });
+  });
+});
+
+describe("claimDocument", () => {
+  let db: Db;
+  beforeEach(() => {
+    db = openDb(":memory:");
+  });
+
+  it("moves a queued document to extracting once; a second claim gets null", () => {
+    const { document } = insertDocument(db, doc, TEST_NOW);
+    expect(
+      claimDocument(db, document.id, "queued", TEST_NOW + 1),
+    ).toMatchObject({
+      id: document.id,
+      status: "extracting",
+      updatedAt: TEST_NOW + 1,
+    });
+    expect(claimDocument(db, document.id, "queued")).toBeNull();
+  });
+
+  it("claims a failed document only from failed, clearing its error", () => {
+    const { document } = insertDocument(db, doc, TEST_NOW);
+    expect(claimDocument(db, document.id, "failed")).toBeNull();
+    setDocumentStatus(db, document.id, { status: "failed", error: "bad" });
+    expect(claimDocument(db, document.id, "failed")).toMatchObject({
+      status: "extracting",
+      error: null,
+    });
+  });
+
+  it("returns null for an unknown id", () => {
+    expect(claimDocument(db, 99, "queued")).toBeNull();
+  });
+});
+
+describe("getDocument and listDocuments", () => {
+  let db: Db;
+  beforeEach(() => {
+    db = openDb(":memory:");
+  });
+
+  it("gets one document by id, or null", () => {
+    const { document } = insertDocument(db, doc, TEST_NOW);
+    expect(getDocument(db, document.id)).toEqual(document);
+    expect(getDocument(db, 99)).toBeNull();
+  });
+
+  it("lists newest first with the fields the panel shows", () => {
+    insertDocument(db, doc, TEST_NOW);
+    insertDocument(
+      db,
+      { ...doc, sha256: "def", filename: "b.csv" },
+      TEST_NOW + 1,
+    );
+    insertDocument(
+      db,
+      { ...doc, sha256: "ghi", filename: "c.pdf" },
+      TEST_NOW + 1,
+    );
+    expect(listDocuments(db).map((item) => item.filename)).toEqual([
+      "c.pdf",
+      "b.csv",
+      "NL-88310.pdf",
+    ]);
+    expect(listDocuments(db)[0]).toEqual({
+      id: 3,
+      filename: "c.pdf",
+      kind: null,
+      status: "queued",
+      error: null,
+    });
+  });
+
+  it("caps the list at DOCUMENT_LIST_LIMIT", () => {
+    Array.from({ length: DOCUMENT_LIST_LIMIT + 1 }, (_, index) =>
+      insertDocument(db, { ...doc, sha256: `sha-${index}` }, TEST_NOW + index),
+    );
+    expect(listDocuments(db)).toHaveLength(DOCUMENT_LIST_LIMIT);
+  });
+});
+
+describe("failInterrupted (spec 0006, AC-11)", () => {
+  it("fails queued and extracting documents, leaves done and failed alone", () => {
+    const db = openDb(":memory:");
+    const add = (sha256: string) =>
+      insertDocument(db, { ...doc, sha256 }, TEST_NOW).document.id;
+    const queued = add("q");
+    const extracting = add("e");
+    const done = add("d");
+    const failed = add("f");
+    claimDocument(db, extracting, "queued");
+    setDocumentStatus(db, done, { status: "done" });
+    setDocumentStatus(db, failed, { status: "failed", error: "bad" });
+
+    expect(failInterrupted(db, TEST_NOW + 9)).toBe(2);
+    expect(getDocument(db, queued)).toMatchObject({
+      status: "failed",
+      error: INTERRUPTED_REASON,
+      updatedAt: TEST_NOW + 9,
+    });
+    expect(getDocument(db, extracting)).toMatchObject({ status: "failed" });
+    expect(getDocument(db, done)).toMatchObject({
+      status: "done",
+      error: null,
+    });
+    expect(getDocument(db, failed)).toMatchObject({ error: "bad" });
+    expect(failInterrupted(db)).toBe(0);
   });
 });

@@ -35,7 +35,7 @@ pnpm format       # Prettier write (format:check to verify)
 pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
 pnpm exec drizzle-kit generate  # New SQL migration in drizzle/ after editing lib/db/schema.ts (applied at server start)
 pnpm generate:sample  # Rewrite public/sample/ from the fixture (committed output, never edit by hand)
-pnpm audit:sample  # Offline audit: reset $DATA_DIR/auditor.db, load the sample, run the checks, store the findings
+pnpm audit:sample  # Offline audit: reset $DATA_DIR/auditor.db, load the sample, run the checks, store the findings, empty $DATA_DIR/uploads/
 pnpm audit:live  # Live audit: Claude reads the 12 sample PDFs, must match offline mode to the cent (needs ANTHROPIC_API_KEY, 12 to 24 paid calls; --dump writes each extraction to $DATA_DIR/live-dump/)
 ```
 
@@ -89,6 +89,7 @@ Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-serve
 - [lib/checks/AGENTS.md](lib/checks/AGENTS.md): the six pure audit checks, `runChecks` and `summarizeFindings`
 - [lib/extract/AGENTS.md](lib/extract/AGENTS.md): one forced Claude tool call per PDF that classifies and extracts it, validated by the shared converters
 - [lib/audit/AGENTS.md](lib/audit/AGENTS.md): the offline audit run (`runSampleAudit`, `pnpm audit:sample`) and `runAudit`
+- [lib/ingest/AGENTS.md](lib/ingest/AGENTS.md): the one intake path (`ingestFile`) behind the upload action and the `/api/ingest` webhook, with its guards and demo gate
 - [scripts/generate-sample/AGENTS.md](scripts/generate-sample/AGENTS.md): the sample data generator that renders `public/sample/` from the fixture
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

@@ -1,11 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { decide, listFindings } from "@/lib/db/audit";
 import { openDb, type Db } from "@/lib/db/client";
 import { auditRuns, decisions, documents, findings } from "@/lib/db/schema";
 import { TEST_NOW } from "@/lib/db/testing";
 import { BRIEF_INVOICED_TOTAL_CENTS } from "@/lib/schemas/fixtures/brief-sample";
 import { SAMPLE_MANIFEST_FILE_COUNT } from "@/lib/schemas/sample-manifest";
-import { runSampleAudit, SAMPLE_MANIFEST } from "./sample";
+import { loadSample, runSampleAudit, SAMPLE_MANIFEST } from "./sample";
 
 const clock = () => TEST_NOW;
 
@@ -88,5 +88,29 @@ describe("runSampleAudit", () => {
     expect(() => runSampleAudit(db, clock, broken)).toThrow(/receipts\.csv/);
     expect(findingKeys(db)).toEqual(before);
     expect(db.select().from(auditRuns).all()).toHaveLength(1);
+  });
+});
+
+describe("loadSample (spec 0006, AC-14)", () => {
+  it("runs the sample audit, then empties the uploads folder", async () => {
+    const db = openDb(":memory:");
+    const clear = vi.fn(async () => {
+      expect(db.select().from(auditRuns).all()).toHaveLength(1);
+    });
+    const { summary } = await loadSample(db, { clear }, clock);
+    expect(summary.findingCount).toBe(8);
+    expect(clear).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves the files in place when the load fails", async () => {
+    const db = openDb(":memory:");
+    const clear = vi.fn(async () => undefined);
+    const broken = {
+      files: SAMPLE_MANIFEST.files.filter(
+        (file) => file.filename !== "receipts.csv",
+      ),
+    };
+    await expect(loadSample(db, { clear }, clock, broken)).rejects.toThrow();
+    expect(clear).not.toHaveBeenCalled();
   });
 });

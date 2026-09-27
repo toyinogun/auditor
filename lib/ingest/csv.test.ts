@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { BRIEF_SAMPLE } from "@/lib/schemas/fixtures/brief-sample";
-import { parseCsv, parsePaymentsCsv, parseReceiptsCsv } from "./csv";
+import { csvKindOf, parseCsv, parsePaymentsCsv, parseReceiptsCsv } from "./csv";
 
 const sampleText = (filename: string): Promise<string> =>
   readFile(
@@ -96,6 +96,36 @@ describe("parseReceiptsCsv and parsePaymentsCsv (AC-8)", () => {
     expect(parseReceiptsCsv("")).toEqual({
       ok: false,
       error: "expected 4 columns, found 0",
+    });
+  });
+});
+
+describe("csvKindOf", () => {
+  it("names each sample CSV by its header", async () => {
+    expect(csvKindOf(await sampleText("receipts.csv"))).toEqual({
+      ok: true,
+      value: "receipts_csv",
+    });
+    expect(csvKindOf(await sampleText("ap_payments.csv"))).toEqual({
+      ok: true,
+      value: "payments_csv",
+    });
+  });
+
+  it("reads a CRLF header and ignores bad data rows below it", async () => {
+    const [header] = (await sampleText("receipts.csv")).split("\n");
+    expect(csvKindOf(`${header}\r\nonly,one\r\n`)).toEqual({
+      ok: true,
+      value: "receipts_csv",
+    });
+  });
+
+  it("gives both parsers' reasons when neither header matches", () => {
+    expect(csvKindOf("a,b\n1,2\n")).toEqual({
+      ok: false,
+      error: expect.stringMatching(
+        /^not a receipts or payments CSV: receipts: column 1: expected \w+, found a; payments: column 1: expected \w+, found a$/,
+      ),
     });
   });
 });

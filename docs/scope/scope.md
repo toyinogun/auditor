@@ -25,7 +25,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5 | Six audit checks | Release 1 | done |
 | 6 | Offline audit run | Release 1 | done |
 | 7 | LLM classify & extract | Release 2 | done |
-| 8 | Upload & ingest | Release 2 | planned |
+| 8 | Upload & ingest | Release 2 | done |
 | 9 | Design system & UI foundation | Release 3 | planned |
 | 10 | Review screen | Release 3 | planned |
 | 11 | Export | Release 3 | planned |
@@ -113,10 +113,18 @@ spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract
   - [x] CSV parsers moved to `lib/ingest/csv.ts`, then `pnpm audit:live` with compare and the atomic store, run green on a real key (AC-8 to AC-11)
 - [x] Verify it: `/check verify LLM classify & extract`
 
-### 8. Upload & ingest · needs a decision
+### 8. Upload & ingest · done
 Upload PDFs and CSVs in the browser, and one ingest endpoint that both the upload and the n8n workflow post to. On the public demo, uploads are limited to the sample files.
 **Done when:** an uploaded file is stored, extracted and audited; the endpoint rejects unknown file types, oversized files and unauthenticated webhook calls; the public demo cannot send outside documents to the model.
-- [ ] Design it (spec): `/architect upload & ingest`
+spec [0006](../specs/0006-upload-ingest/index.md) · code in `lib/ingest/`, `app/actions.ts`, `app/api/ingest/`, `app/_components/upload-panel.tsx`
+- [x] Design it (spec): `/architect upload & ingest`
+- [x] Build it: `/develop upload & ingest`
+  - [x] Config, file type detection and the upload folder store (AC-4, AC-5, AC-15, AC-17)
+  - [x] Thin whole: `ingestFile` for PDFs and CSVs, the upload action and the home page panel with headline (AC-1, AC-2, AC-9, AC-12, AC-13, AC-16)
+  - [x] Duplicates, Retry and the restart sweep (AC-8, AC-10, AC-11)
+  - [x] Demo gate and `loadSample` emptying uploads (AC-7, AC-14)
+  - [x] `/api/ingest` webhook with its guards (AC-3, AC-5, AC-6, AC-17)
+- [x] Verify it: `/check verify upload & ingest`
 
 ## Release 3: Analyst review
 
@@ -167,6 +175,7 @@ Out of scope for this build, kept so the plan stays honest.
 - **Upwork prospect accounts**: once logins exist, create an account with its own username and password for each client you send an Upwork proposal to (where it fits), so they can use it live under that login · needs a decision · after logins
 - **Accounting system push**: send approved claims to QuickBooks or Xero (the brief's next step) · needs a decision
 - **Visitor uploads on the public demo**: real files with a rate limit or the visitor's own key · needs a decision
+- **Overlapping CSV exports**: detect rows repeated across two receipts or payments files · from spec 0006
 - **CI on push**: GitHub Actions for typecheck, test and build, skipped for now (from spec 0001)
 - **Error monitoring**: report crashes on the public demo · needs a decision
 - **Visitor analytics**: count visits and sample loads · needs a decision

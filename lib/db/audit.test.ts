@@ -3,7 +3,7 @@ import { findingKey } from "@/lib/schemas/keys";
 import type { Finding } from "@/lib/schemas/finding";
 import { BRIEF_INVOICED_TOTAL_CENTS } from "@/lib/schemas/fixtures/brief-sample";
 import { resetAll } from "./admin";
-import { decide, listFindings, saveAuditRun } from "./audit";
+import { decide, latestAuditRun, listFindings, saveAuditRun } from "./audit";
 import { openDb, type Db } from "./client";
 import { loadAuditInput } from "./records";
 import * as schema from "./schema";
@@ -236,5 +236,29 @@ describe("resetAll (AC-14)", () => {
     );
     expect(tables).toHaveLength(15);
     expect(counts.every((n) => n === 0)).toBe(true);
+  });
+});
+
+describe("latestAuditRun", () => {
+  let db: Db;
+  beforeEach(() => {
+    db = openDb(":memory:");
+  });
+
+  it("is null before any run, then the newest run", () => {
+    expect(latestAuditRun(db)).toBeNull();
+    seedBriefSample(db);
+    saveAuditRun(db, { startedAt: TEST_NOW, finishedAt: TEST_NOW }, []);
+    const second = saveAuditRun(
+      db,
+      { startedAt: TEST_NOW + 1, finishedAt: TEST_NOW + 2 },
+      [],
+    );
+    expect(latestAuditRun(db)).toMatchObject({
+      id: second,
+      findingCount: 0,
+      invoicedTotalCents: BRIEF_INVOICED_TOTAL_CENTS,
+      recoverableTotalCents: 0,
+    });
   });
 });

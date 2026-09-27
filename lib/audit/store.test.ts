@@ -1,12 +1,20 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { openDb, type Db } from "@/lib/db/client";
-import { contracts, invoices, payments, purchaseOrders } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import {
+  contracts,
+  documents,
+  invoices,
+  payments,
+  purchaseOrders,
+} from "@/lib/db/schema";
 import { TEST_NOW } from "@/lib/db/testing";
 import { briefSampleRecords } from "@/lib/schemas/fixtures/brief-sample-records";
 import type { AuditInput } from "@/lib/schemas/records";
 import { SAMPLE_MANIFEST } from "./sample";
 import {
   saveAuditInput,
+  saveDocumentRecords,
   storeManifestDocuments,
   trySaveAuditInput,
   type CsvRefs,
@@ -123,5 +131,90 @@ describe("saveAuditInput", () => {
         TEST_NOW,
       ),
     ).toThrow(/^BW-5521\.pdf: contract C-2026-014 .* overlaps C-2026-014/);
+  });
+});
+
+describe("saveDocumentRecords", () => {
+  let db: Db;
+  let refFor: RefFor;
+  beforeEach(() => {
+    db = openDb(":memory:");
+    refFor = storeManifestDocuments(db, SAMPLE_MANIFEST, TEST_NOW);
+  });
+
+  const docOf = (filename: string) =>
+    db
+      .select()
+      .from(documents)
+      .where(eq(documents.id, refFor(filename).documentId))
+      .get();
+
+  it("stores an invoice with its text layer flag and marks it done", () => {
+    const [invoice] = briefSampleRecords(refFor).invoices;
+    expect(
+      saveDocumentRecords(
+        db,
+        { kind: "invoice", record: invoice, hasTextLayer: false },
+        TEST_NOW + 1,
+      ),
+    ).toEqual({ ok: true, value: undefined });
+    expect(docOf(invoice.filename)).toMatchObject({
+      status: "done",
+      kind: "invoice",
+      hasTextLayer: false,
+      updatedAt: TEST_NOW + 1,
+    });
+    expect(db.select().from(invoices).all()).toHaveLength(1);
+  });
+
+  it("stores CSV rows under their document and marks it done", () => {
+    const { payments: rows } = briefSampleRecords(refFor);
+    const { documentId } = refFor("ap_payments.csv");
+    expect(
+      saveDocumentRecords(db, { kind: "payments_csv", documentId, rows }).ok,
+    ).toBe(true);
+    expect(db.select().from(payments).all()).toHaveLength(rows.length);
+    expect(docOf("ap_payments.csv")).toMatchObject({ status: "done" });
+  });
+
+  it("returns a refusal as err and rolls back the text layer flag", () => {
+    const [contract] = briefSampleRecords(refFor).contracts;
+    saveDocumentRecords(db, {
+      kind: "contract",
+      record: contract,
+      hasTextLayer: true,
+    });
+    const copy = { ...contract, ...refFor("BW-5521.pdf") };
+    const saved = saveDocumentRecords(db, {
+      kind: "contract",
+      record: copy,
+      hasTextLayer: false,
+    });
+    expect(saved).toEqual({
+      ok: false,
+      error: expect.stringContaining("overlaps"),
+    });
+    expect(docOf("BW-5521.pdf")).toMatchObject({
+      status: "queued",
+      hasTextLayer: null,
+    });
+    expect(db.select().from(contracts).all()).toHaveLength(1);
+  });
+
+  it("turns a broken database constraint into a plain err, without schema names", () => {
+    const { receipts: rows } = briefSampleRecords(refFor);
+    const { documentId } = refFor("receipts.csv");
+    const twice = [rows[0], { ...rows[1], rowNo: rows[0].rowNo }];
+    const saved = saveDocumentRecords(db, {
+      kind: "receipts_csv",
+      documentId,
+      rows: twice,
+    });
+    expect(saved).toEqual({
+      ok: false,
+      error: "the database refused a record: it repeats one already stored",
+    });
+    expect(JSON.stringify(saved)).not.toMatch(/UNIQUE|receipts\.|constraint/);
+    expect(docOf("receipts.csv")).toMatchObject({ status: "queued" });
   });
 });

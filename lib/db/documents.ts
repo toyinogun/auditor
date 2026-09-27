@@ -1,5 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type {
   DocumentKind,
   DocumentSource,
@@ -85,3 +85,62 @@ export const setDocumentStatus = (
     .get();
   return updated ? ok(updated) : err(`document ${id} does not exist`);
 };
+
+/**
+ * Moves a document to `extracting` only if it is still in `from`, in one conditional statement,
+ * so two callers can never both hold it (spec 0006, step 6). Null means someone else holds it.
+ */
+export const claimDocument = (
+  db: Db,
+  id: number,
+  from: "queued" | "failed",
+  now: number = Date.now(),
+): StoredDocument | null =>
+  db
+    .update(documents)
+    .set({ status: "extracting", error: null, updatedAt: now })
+    .where(and(eq(documents.id, id), eq(documents.status, from)))
+    .returning()
+    .get() ?? null;
+
+export const getDocument = (db: Db, id: number): StoredDocument | null =>
+  db.select().from(documents).where(eq(documents.id, id)).get() ?? null;
+
+/** What the upload panel lists for each stored document. */
+export type DocumentListItem = Pick<
+  StoredDocument,
+  "id" | "filename" | "kind" | "status" | "error"
+>;
+
+/** Most documents the upload panel lists (spec 0006, value sourcing). */
+export const DOCUMENT_LIST_LIMIT = 200;
+
+/** Stored documents, newest first, capped at `DOCUMENT_LIST_LIMIT`. */
+export const listDocuments = (db: Db): readonly DocumentListItem[] =>
+  db
+    .select({
+      id: documents.id,
+      filename: documents.filename,
+      kind: documents.kind,
+      status: documents.status,
+      error: documents.error,
+    })
+    .from(documents)
+    .orderBy(desc(documents.createdAt), desc(documents.id))
+    .limit(DOCUMENT_LIST_LIMIT)
+    .all();
+
+/** The reason a restart leaves on a document it interrupted (spec 0006, AC-11). */
+export const INTERRUPTED_REASON = "interrupted by a restart, retry it";
+
+/**
+ * At server start, nothing is extracting any more: every `queued` or `extracting` document
+ * becomes `failed` so it can be retried (AC-11). Returns how many; running it twice is harmless.
+ */
+export const failInterrupted = (db: Db, now: number = Date.now()): number =>
+  db
+    .update(documents)
+    .set({ status: "failed", error: INTERRUPTED_REASON, updatedAt: now })
+    .where(inArray(documents.status, ["queued", "extracting"]))
+    .returning({ id: documents.id })
+    .all().length;

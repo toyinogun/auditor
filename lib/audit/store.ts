@@ -1,6 +1,6 @@
 import "server-only";
 import type { Db } from "@/lib/db/client";
-import { insertDocument } from "@/lib/db/documents";
+import { insertDocument, setDocumentStatus } from "@/lib/db/documents";
 import {
   saveContract,
   saveInvoice,
@@ -8,7 +8,15 @@ import {
   savePurchaseOrder,
   saveReceipts,
 } from "@/lib/db/records";
-import type { AuditInput, DocumentRef } from "@/lib/schemas/records";
+import type {
+  AuditInput,
+  ContractRecord,
+  DocumentRef,
+  InvoiceRecord,
+  PaymentRecord,
+  PurchaseOrderRecord,
+  ReceiptRecord,
+} from "@/lib/schemas/records";
 import { err, ok, orThrow, type Result } from "@/lib/schemas/result";
 import type { SampleManifest } from "@/lib/schemas/sample-manifest";
 
@@ -112,4 +120,115 @@ export const saveAuditInput = (
 ): void => {
   const saved = trySaveAuditInput(db, input, csvRefs, now);
   if (!saved.ok) orThrow(saved.error.filename, err(saved.error.error));
+};
+
+/** One document's records, ready to store (spec 0006, step 8). */
+export type DocumentRecords =
+  | {
+      readonly kind: "invoice";
+      readonly record: InvoiceRecord;
+      readonly hasTextLayer: boolean;
+    }
+  | {
+      readonly kind: "contract";
+      readonly record: ContractRecord;
+      readonly hasTextLayer: boolean;
+    }
+  | {
+      readonly kind: "purchase_order";
+      readonly record: PurchaseOrderRecord;
+      readonly hasTextLayer: boolean;
+    }
+  | {
+      readonly kind: "receipts_csv";
+      readonly documentId: number;
+      readonly rows: readonly ReceiptRecord[];
+    }
+  | {
+      readonly kind: "payments_csv";
+      readonly documentId: number;
+      readonly rows: readonly PaymentRecord[];
+    };
+
+const saveByKind = (
+  db: Db,
+  records: DocumentRecords,
+  now: number,
+): Result<unknown> => {
+  switch (records.kind) {
+    case "invoice":
+      return saveInvoice(db, records.record, now);
+    case "contract":
+      return saveContract(db, records.record, now);
+    case "purchase_order":
+      return savePurchaseOrder(db, records.record, now);
+    case "receipts_csv":
+      return saveReceipts(db, records.documentId, records.rows, now);
+    case "payments_csv":
+      return savePayments(db, records.documentId, records.rows, now);
+  }
+};
+
+const documentIdOf = (records: DocumentRecords): number =>
+  "record" in records ? records.record.documentId : records.documentId;
+
+/** Thrown inside the transaction only to roll it back; carries the refusal as a value. */
+const refusal = (reason: string): Error =>
+  Object.assign(new Error(reason), { refusal: reason });
+
+const REFUSED = "the database refused a record";
+
+/**
+ * The reason lands in `documents.error` and the webhook's answer, so it names the kind of
+ * constraint, never the driver's message (which carries table and column names).
+ */
+const REFUSED_BY_CODE: Readonly<Record<string, string>> = {
+  SQLITE_CONSTRAINT_UNIQUE: `${REFUSED}: it repeats one already stored`,
+  SQLITE_CONSTRAINT_PRIMARYKEY: `${REFUSED}: it repeats one already stored`,
+  SQLITE_CONSTRAINT_FOREIGNKEY: `${REFUSED}: it points to a record that does not exist`,
+  SQLITE_CONSTRAINT_NOTNULL: `${REFUSED}: a required value is missing`,
+  SQLITE_CONSTRAINT_CHECK: `${REFUSED}: a value is out of range`,
+};
+
+/** better-sqlite3 throws `SqliteError` for a broken constraint; matched by name to keep the driver in lib/db. */
+const refusedReason = (error: unknown): string | null => {
+  if (!(error instanceof Error)) return null;
+  if ("refusal" in error) return String(error.refusal);
+  if (error.name !== "SqliteError") return null;
+  const code = "code" in error ? String(error.code) : "";
+  return REFUSED_BY_CODE[code] ?? REFUSED;
+};
+
+/**
+ * Stores one document's records and marks it `done` in one transaction (the save functions set
+ * `done`); a PDF's text layer flag lands in the same transaction. A record the database refuses
+ * rolls it all back and comes back as `err`, leaving the document's status to the caller.
+ */
+export const saveDocumentRecords = (
+  db: Db,
+  records: DocumentRecords,
+  now: number = Date.now(),
+): Result<void> => {
+  try {
+    db.transaction(() => {
+      if ("hasTextLayer" in records) {
+        orThrow(
+          "text layer",
+          setDocumentStatus(
+            db,
+            documentIdOf(records),
+            { status: "extracting", hasTextLayer: records.hasTextLayer },
+            now,
+          ),
+        );
+      }
+      const saved = saveByKind(db, records, now);
+      if (!saved.ok) throw refusal(saved.error);
+    });
+    return ok(undefined);
+  } catch (error) {
+    const reason = refusedReason(error);
+    if (reason === null) throw error;
+    return err(reason);
+  }
 };
