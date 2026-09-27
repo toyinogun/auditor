@@ -52,7 +52,7 @@ export const runSampleAudit = (
 /**
  * The clean start (spec 0006, AC-14): `runSampleAudit`, then empties the uploads folder once its
  * transaction has committed. A load that throws leaves the files in place. `pnpm audit:sample`
- * and Load sample data (Feature 10) call this.
+ * calls this; Load sample data runs the same steps through `loadSampleData`.
  */
 export const loadSample = async (
   db: Db,
@@ -72,9 +72,23 @@ export type SampleLoaded = {
 
 export const SAMPLE_LOAD_FAILED = "could not load the sample data, try again";
 
+const tryRunSampleAudit = (
+  db: Db,
+  clock: () => number,
+  manifest: ManifestFiles,
+): Result<AuditRunResult, unknown> => {
+  try {
+    return ok(runSampleAudit(db, clock, manifest));
+  } catch (error) {
+    return err(error);
+  }
+};
+
 /**
- * Load sample data (spec 0007, AC-12): `loadSample` for the app bar button, with a thrown load
- * caught here and returned as an error, never a model call. Logs one `sample_loaded` event.
+ * Load sample data (spec 0007, AC-12): the same steps as `loadSample` for the app bar button,
+ * never a model call. Only a failed audit is an error, and it rolls back. Once the run commits it
+ * is live, so a failed clear is logged, not returned: the leftover files are unreferenced and the
+ * next load clears them. Logs one `sample_loaded` event.
  */
 export const loadSampleData = async (
   db: Db,
@@ -82,24 +96,29 @@ export const loadSampleData = async (
   clock: () => number = Date.now,
   manifest: ManifestFiles = SAMPLE_MANIFEST,
 ): Promise<Result<SampleLoaded>> => {
-  try {
-    const { summary } = await loadSample(db, files, clock, manifest);
-    logEvent({
-      event: "sample_loaded",
-      outcome: "ok",
-      findingCount: summary.findingCount,
-    });
-    return ok({
-      findingCount: summary.findingCount,
-      recoverableCents: summary.recoverableCents,
-    });
-  } catch (error) {
+  const run = tryRunSampleAudit(db, clock, manifest);
+  if (!run.ok) {
     logEvent({
       event: "sample_loaded",
       outcome: "failed",
       findingCount: null,
-      error: error instanceof Error ? error.name : "unknown",
+      error: run.error instanceof Error ? run.error.name : "unknown",
     });
     return err(SAMPLE_LOAD_FAILED);
   }
+  const { summary } = run.value;
+  const uploadsCleared = await files.clear().then(
+    () => true,
+    () => false,
+  );
+  logEvent({
+    event: "sample_loaded",
+    outcome: "ok",
+    findingCount: summary.findingCount,
+    uploadsCleared,
+  });
+  return ok({
+    findingCount: summary.findingCount,
+    recoverableCents: summary.recoverableCents,
+  });
 };

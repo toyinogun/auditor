@@ -178,12 +178,85 @@ describe("loadSampleData (spec 0007, AC-12)", () => {
     ]);
   });
 
-  it("returns an error when the uploads folder cannot be emptied", async () => {
+  it("empties the uploads folder once, after the new run has committed (AC-12)", async () => {
     const db = openDb(":memory:");
+    const runsSeenByClear: number[] = [];
+    const clear = vi.fn(async () => {
+      runsSeenByClear.push(db.select().from(auditRuns).all().length);
+    });
+
+    await loadSampleData(db, { clear }, clock);
+
+    expect(clear).toHaveBeenCalledTimes(1);
+    expect(runsSeenByClear).toEqual([1]);
+    expect(logged()).toEqual([
+      expect.objectContaining({ outcome: "ok", uploadsCleared: true }),
+    ]);
+  });
+
+  it("leaves the uploads folder alone when the audit fails (AC-12)", async () => {
+    const db = openDb(":memory:");
+    const clear = vi.fn(async () => undefined);
+    const broken = {
+      files: SAMPLE_MANIFEST.files.filter(
+        (file) => file.filename !== "receipts.csv",
+      ),
+    };
+
+    const result = await loadSampleData(db, { clear }, clock, broken);
+
+    expect(result).toEqual({ ok: false, error: SAMPLE_LOAD_FAILED });
+    expect(clear).not.toHaveBeenCalled();
+    expect(logged()).toEqual([
+      expect.objectContaining({
+        outcome: "failed",
+        findingCount: null,
+        error: "Error",
+      }),
+    ]);
+  });
+
+  it("still counts the load as done when the clear rejects with a non Error value (AC-12)", async () => {
+    const db = openDb(":memory:");
+    const clear = (): Promise<void> => Promise.reject("disk gone");
+
+    const result = await loadSampleData(db, { clear }, clock);
+
+    expect(result.ok).toBe(true);
+    expect(logged()).toEqual([
+      expect.objectContaining({ outcome: "ok", uploadsCleared: false }),
+    ]);
+  });
+
+  it("counts the load as done when only emptying the uploads folder fails", async () => {
+    const db = openDb(":memory:");
+    runSampleAudit(db, () => TEST_NOW - 1);
+    const [finding] = listFindings(db);
+    decide(db, {
+      findingKey: finding.findingKey,
+      status: "approved",
+      reason: null,
+    });
     const clear = async (): Promise<void> => {
       throw new Error("EACCES: permission denied");
     };
+
     const result = await loadSampleData(db, { clear }, clock);
-    expect(result).toEqual({ ok: false, error: SAMPLE_LOAD_FAILED });
+
+    // The new run committed before the clear, so it is live and the result says so.
+    expect(result).toEqual({
+      ok: true,
+      value: { findingCount: 8, recoverableCents: 976685 },
+    });
+    expect(db.select().from(auditRuns).get()?.startedAt).toBe(TEST_NOW);
+    expect(db.select().from(decisions).all()).toHaveLength(0);
+    expect(logged()).toEqual([
+      expect.objectContaining({
+        event: "sample_loaded",
+        outcome: "ok",
+        findingCount: 8,
+        uploadsCleared: false,
+      }),
+    ]);
   });
 });

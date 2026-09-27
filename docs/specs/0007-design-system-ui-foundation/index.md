@@ -182,7 +182,8 @@ Why `@theme inline` for everything: it is required for the `next/font` variables
 - Happy path: with the seed file, the drift test passes. Change one hex in the seed and it fails, naming `tertiary` and both values. Verifies **AC-1**, **AC-4**.
 - Happy path: on a fresh DB, press Load sample data. It runs without a dialog, then `/review` shows `$9,766.85`, `8` and `18.1%`. Verifies **AC-11**, **AC-12**.
 - Failure case: record one decision, press Load sample data, and the dialog shows "1 saved decision". Cancel leaves the decisions in place, and Reload clears them. Verifies **AC-13**.
-- Failure case: `loadSample` throws (test with an unwritable uploads dir). The button shows the alert, stays usable, and the DB still holds the previous run (the transaction rolled back). Verifies **AC-12**.
+- Failure case: the sample audit throws (a broken manifest in the unit test; a held database write lock in the running app). The button shows the alert, stays usable, the DB still holds the previous run (the transaction rolled back), and the uploads folder is left alone. Verifies **AC-12**.
+- Partial case: the run commits but emptying the uploads folder fails (an unwritable uploads dir). The run is live, so the load counts as done: no alert, `/review` shows the new run, and `sample_loaded` logs `uploadsCleared: false`. The leftover files are unreferenced and the next load clears them (spec 0006, AC-14 clears only after the commit). Verifies **AC-12**.
 - Failure case: add `bg-tertiary-wash` to a documents page file, and the source guard fails naming the file; the same for `bg-(--color-tertiary)` and for a component that mentions `--ds-color-primary`. Verifies **AC-15**.
 - Unit: the reload dialog body reads "1 saved decision" at N = 1 and "2 saved decisions" at N = 2. Verifies **AC-13**.
 - Drift: drop `'zero' 1` from `type-data-md` in `globals.css` and the test fails naming the role. Verifies **AC-4**.
