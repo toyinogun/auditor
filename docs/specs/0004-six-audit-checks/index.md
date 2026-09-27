@@ -211,7 +211,7 @@ Skateboard: first a thin but complete audit (duplicates plus the summary, with t
 
 ## Follow-up
 
-- [ ] Update spec 0002's value sourcing row for `recoverable_total_cents` to "sum of findings with action `recover`", its evidence locator row to include `charge line N`, and its finding key detail list to include `po`, `contract`, `receipt`, `surcharge-energy` and `charge-line-N`.
+- [x] Update spec 0002's value sourcing row for `recoverable_total_cents` to "sum of findings with action `recover`", its evidence locator row to include `charge line N`, and its finding key detail list to include `po`, `contract`, `receipt`, `surcharge-energy` and `charge-line-N`.
 - [ ] Feature 6 (offline audit run): call `runChecks(loadAuditInput(db))` then `saveAuditRun`; consider having `lib/db/testing.ts` `seedBriefSample` reuse `briefSampleRecords` with its document refs.
 - [ ] Feature 10 (review screen): read the tiles from `summarizeFindings`, and show `blockedCents` as its own figure (not in recoverable).
 - [ ] Feature 11 (export): the total row sums `recover` findings only, matching the review screen.
