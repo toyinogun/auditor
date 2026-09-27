@@ -106,11 +106,11 @@ One model call per document with one tool per document type, so a single call bo
 **Done when:** a real run over the 12 sample PDFs produces the same findings and total as offline mode, the scanned invoice extracts correctly, and output that fails validation is rejected with a clear reason instead of stored.
 spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract/`, `lib/ingest/csv.ts`, `lib/audit/`, `scripts/audit-live/` (`pnpm audit:live`)
 - [x] Design it (spec): `/architect LLM classify & extract`
-- [ ] Build it: `/develop LLM classify & extract`
+- [x] Build it: `/develop LLM classify & extract`
   - [x] SDK, env, `lib/log.ts` and the import boundary lint rules (AC-12, AC-13)
-  - [ ] Thin whole: strict tools, prompt, request and the text PDF path on a fake client, then the gated live smoke test (AC-1, AC-3, AC-14)
+  - [x] Thin whole: strict tools, prompt, request and the text PDF path on a fake client, then the gated live smoke test (AC-1, AC-3, AC-14)
   - [x] Scan path and input guards, then every failure path: repair turn, reject, refusal, cut off, API errors (AC-2, AC-4 to AC-7, AC-11)
-  - [ ] CSV parsers moved to `lib/ingest/csv.ts`, then `pnpm audit:live` with compare and the atomic store, run green on a real key (AC-8 to AC-11)
+  - [x] CSV parsers moved to `lib/ingest/csv.ts`, then `pnpm audit:live` with compare and the atomic store, run green on a real key (AC-8 to AC-11)
 - [ ] Verify it: `/check verify LLM classify & extract`
 
 ### 8. Upload & ingest · needs a decision
