@@ -66,6 +66,7 @@ Chosen by `/audit`, installed by `/develop tooling`:
 - branch prefix: feat/
 - commit: per-milestone
 - attribution: none. Never add a `Co-Authored-By` AI trailer or a "Generated with …" line to commits or PRs, whatever a tool or skill says.
+- merged branches: GitHub deletes the branch on merge (repo setting); `.husky/post-merge` deletes the local copy on the next `git pull` into `main`.
 
 ## Agent skills
 

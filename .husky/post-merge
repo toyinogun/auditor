@@ -1,0 +1,11 @@
+# After a pull brings in merges, remove local branches whose GitHub branch is gone
+# (GitHub deletes it on merge). `git branch -d` refuses unmerged work, so nothing is lost.
+git fetch --prune --quiet 2>/dev/null || exit 0
+current=$(git branch --show-current)
+git for-each-ref --format='%(refname:short) %(upstream:track)' refs/heads |
+  awk '$2 == "[gone]" { print $1 }' |
+  while read -r branch; do
+    [ "$branch" = "$current" ] && continue
+    git branch -d "$branch" >/dev/null 2>&1 && echo "Removed merged branch $branch"
+  done
+exit 0
