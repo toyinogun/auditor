@@ -133,13 +133,13 @@ An analyst can now judge every finding and hand over a claim list.
 ### 9. Design system & UI foundation · in-progress
 A calm, credible finance tool look: type, color, spacing, tables, tiles, and base components, so the review screen and landing page feel like one real product.
 **Done when:** `design.md` covers type, color, spacing and the core components, and the base components render in the scaffold.
-spec [0007](../specs/0007-design-system-ui-foundation/index.md) · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1a app bar, 1d documents, 1j empty state)
+spec [0007](../specs/0007-design-system-ui-foundation/index.md) · code in `app/styles/`, `app/globals.css`, `app/(app)/`, `app/styleguide/`, `components/` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1a app bar, 1d documents, 1j empty state)
 - [x] Design it (spec): `/architect design system & UI foundation`
-- [ ] Build it: `/develop design system & UI foundation`
-  - [ ] DESIGN.md committed with `design:lint`, the token seed, mapping layer, fonts and drift test, shadcn init with the Button (AC-1 to AC-6, AC-16, AC-17)
-  - [ ] Thin whole: Money, SummaryTile, Chip, AppBar, the `(app)` shell, `/` redirect, `/review` stub, Load sample data with its reload guard (AC-8, AC-10 to AC-13)
-  - [ ] Remaining primitives and `/styleguide` (AC-7, AC-9)
-  - [ ] `/documents` move and restyle, source guards, full green pass (AC-14, AC-15, AC-18)
+- [x] Build it: `/develop design system & UI foundation`
+  - [x] DESIGN.md committed with `design:lint`, the token seed, mapping layer, fonts and drift test, shadcn init with the Button (AC-1 to AC-6, AC-16, AC-17)
+  - [x] Thin whole: Money, SummaryTile, Chip, AppBar, the `(app)` shell, `/` redirect, `/review` stub, Load sample data with its reload guard (AC-8, AC-10 to AC-13)
+  - [x] Remaining primitives and `/styleguide` (AC-7, AC-9)
+  - [x] `/documents` move and restyle, source guards, full green pass (AC-14, AC-15, AC-18)
 - [ ] Verify it: `/check verify design system & UI foundation`
 
 ### 10. Review screen · needs a decision

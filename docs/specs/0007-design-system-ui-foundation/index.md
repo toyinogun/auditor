@@ -1,7 +1,7 @@
 # 0007. Design system and UI foundation from DESIGN.md
 
 **Date**: 2026-09-27
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -195,14 +195,14 @@ Why `@theme inline` for everything: it is required for the `next/font` variables
 
 Skateboard: the first milestone ships the thinnest usable whole (tokens, fonts, shell, a real page and the working button), then each later milestone grows it. It stays shippable after every step.
 
-1. [ ] Commit `DESIGN.md`. Add `@google/design.md` as a pinned devDependency and a `design:lint` script, and confirm it lints clean. Satisfies **AC-17**.
-2. [ ] Tokens and fonts. Write the drift test first (RED) with `yaml` and `culori`. Write the seed `app/styles/design-tokens.css` from `DESIGN.md` using the `--ds-` naming contract, then the mapping layer in `globals.css` (`@theme inline`, the `type-*` utilities, motion and shadow tokens, the focus ring and reduced motion base styles), and `app/fonts.ts` wired into the root layout (GREEN). Satisfies **AC-1**, **AC-2**, **AC-4**, **AC-5**, **AC-6**, **AC-16**.
-3. [ ] shadcn init (Radix, `components.json` with aliases `@/components`, `@/components/ui`, `@/lib/utils`) and the shadcn alias table in `globals.css`, with no dark block. Add Button and restyle it to the four variants. Satisfies **AC-3**, **AC-7** (Button).
-4. [ ] Thin whole. `countDecisions` test first, then build it. Build `Money`, `SummaryTile`, `Chip`, `AppBar` with `NavLink`, the `(app)` layout with its frame, `/` redirect and the `/review` stub. Build the `loadSampleData` action (action test with an in memory DB and a temp uploads dir, including the thrown load case) and `LoadSampleButton` with its pending state, error alert and guard Dialog (add shadcn Dialog here, restyled). Satisfies **AC-8**, **AC-10**, **AC-11**, **AC-12**, **AC-13**, **AC-7** (Dialog).
-5. [ ] Remaining primitives: add and restyle Input, Textarea, Tooltip (provider at 400ms in the `(app)` layout), Dropdown Menu and Table. Satisfies **AC-7**, **AC-16**.
-6. [ ] `/styleguide` with every token and every component state, plus the `DEMO_MODE` 404 check. Satisfies **AC-9**.
-7. [ ] Move the home content to `/documents` and restyle `upload-panel.tsx` (drop zone, rows, `Chip` mapping, Retry as `Button size="sm" variant="secondary"`, reasons, headline with `Money`). Spec 0006 tests stay green. Replace the `STATUS_STYLE` map with a status → chip state function in `upload-rows.ts`, with a unit test. Satisfies **AC-14**.
-8. [ ] Source guards test (amber allowlist, token file isolation). Then run the full green pass: typecheck, lint, test, build, design:lint. Satisfies **AC-15**, **AC-18**.
+1. [x] Commit `DESIGN.md`. Add `@google/design.md` as a pinned devDependency and a `design:lint` script, and confirm it lints clean. Satisfies **AC-17**.
+2. [x] Tokens and fonts. Write the drift test first (RED) with `yaml` and `culori`. Write the seed `app/styles/design-tokens.css` from `DESIGN.md` using the `--ds-` naming contract, then the mapping layer in `globals.css` (`@theme inline`, the `type-*` utilities, motion and shadow tokens, the focus ring and reduced motion base styles), and `app/fonts.ts` wired into the root layout (GREEN). Satisfies **AC-1**, **AC-2**, **AC-4**, **AC-5**, **AC-6**, **AC-16**.
+3. [x] shadcn init (Radix, `components.json` with aliases `@/components`, `@/components/ui`, `@/lib/utils`) and the shadcn alias table in `globals.css`, with no dark block. Add Button and restyle it to the four variants. Satisfies **AC-3**, **AC-7** (Button).
+4. [x] Thin whole. `countDecisions` test first, then build it. Build `Money`, `SummaryTile`, `Chip`, `AppBar` with `NavLink`, the `(app)` layout with its frame, `/` redirect and the `/review` stub. Build the `loadSampleData` action (action test with an in memory DB and a temp uploads dir, including the thrown load case) and `LoadSampleButton` with its pending state, error alert and guard Dialog (add shadcn Dialog here, restyled). Satisfies **AC-8**, **AC-10**, **AC-11**, **AC-12**, **AC-13**, **AC-7** (Dialog).
+5. [x] Remaining primitives: add and restyle Input, Textarea, Tooltip (provider at 400ms in the `(app)` layout), Dropdown Menu and Table. Satisfies **AC-7**, **AC-16**.
+6. [x] `/styleguide` with every token and every component state, plus the `DEMO_MODE` 404 check. Satisfies **AC-9**.
+7. [x] Move the home content to `/documents` and restyle `upload-panel.tsx` (drop zone, rows, `Chip` mapping, Retry as `Button size="sm" variant="secondary"`, reasons, headline with `Money`). Spec 0006 tests stay green. Replace the `STATUS_STYLE` map with a status → chip state function in `upload-rows.ts`, with a unit test. Satisfies **AC-14**.
+8. [x] Source guards test (amber allowlist, token file isolation). Then run the full green pass: typecheck, lint, test, build, design:lint. Satisfies **AC-15**, **AC-18**.
 
 ## Consequences
 
