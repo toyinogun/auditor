@@ -10,14 +10,15 @@ The Next.js App Router layer: pages, the app shell, Server Actions, the n8n webh
 |---|---|
 | `layout.tsx` | root `<html>`: font variables from `fonts.ts`, `globals.css`, `TooltipProvider`, the `%s · Overpayment Auditor` title template |
 | `page.tsx` | `/` redirects to `/review` until the landing page (Feature 13) replaces it |
-| `(app)/layout.tsx` | the working app's shell: skip link, `AppBar` with `countDecisions` read per request, the 1440px frame |
+| `(app)/layout.tsx` | the working app's shell: skip link, `AppBar` with `countDecisions` and `canExport` (a run exists) read per request, the 1440px frame |
 | `(app)/review/page.tsx` | the review screen (spec 0008): four tiles, then the findings table and detail split pane selected by `?finding=<key>`, the zero findings panel, or spec 0007's empty state |
 | `(app)/review/_components/` | the review screen's pieces: `findings-table.tsx`, `finding-detail.tsx`, `invoice-paper.tsx` (the one amber file here), `decision-bar.tsx`, `reject-dialog.tsx`, `use-review-keyboard.ts`, with pure logic in `decision.ts` and `review-keys.ts` |
 | `(app)/documents/page.tsx` | intake page, capped at 880px, renders `_components/upload-panel.tsx` (spec 0006, restyled by 0007) |
-| `(app)/_components/` | client pieces of the shell: `load-sample-button.tsx` (pending state, reload guard dialog, error), `nav-link.tsx` (`aria-current` from `usePathname`), `reload-warning.ts` (pure dialog copy) |
+| `(app)/_components/` | client pieces of the shell: `load-sample-button.tsx` (pending state, reload guard dialog, error), `nav-link.tsx` (`aria-current` from `usePathname`), `export-menu.tsx` (Export dropdown of two `<a download>` links to `/api/export`, disabled with a tooltip before the first run), `reload-warning.ts` (pure dialog copy) |
 | `_components/upload-panel.tsx`, `upload-rows.ts` | the upload panel (client) and its pure row model, unit tested |
 | `actions.ts` | every Server Action: `loadSampleData`, `uploadFile`, `retryUpload`, `decideFinding`, plus `revalidateAudit()` |
 | `api/ingest/route.ts` | the n8n webhook (spec 0006, AC-3), a thin wrapper over `handleIngestRequest` in `lib/ingest/` |
+| `api/export/route.ts` | `GET /api/export?format=xlsx\|csv` (spec 0009), a thin wrapper over `handleExportRequest` in `lib/audit/export.ts` |
 | `styleguide/page.tsx` | internal showcase of every token and component state (spec 0007, AC-9); 404 when `DEMO_MODE=true` |
 | `fonts.ts` | IBM Plex Sans, IBM Plex Mono and Instrument Serif via `next/font/google`, exposed as CSS variables |
 | `styles/design-tokens.css` | the token values (seed or Claude Design export), read only by `globals.css` |
@@ -46,5 +47,6 @@ The Next.js App Router layer: pages, the app shell, Server Actions, the n8n webh
 - [0006 upload and ingest](../docs/specs/0006-upload-ingest/index.md)
 - [0007 design system and UI foundation](../docs/specs/0007-design-system-ui-foundation/index.md)
 - [0008 review screen](../docs/specs/0008-review-screen/index.md)
+- [0009 export](../docs/specs/0009-export/index.md)
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

@@ -8,7 +8,7 @@ Shared UI for every screen, built to `DESIGN.md` ("Highlighter Ledger"). Governi
 - `money.tsx`: `Money`, the only way an amount is rendered. Takes integer cents, prints `formatCents` output, always with cents. `size` `md` | `lg` | `display` (`display` is reserved for the recoverable tile).
 - `summary-tile.tsx`: `SummaryTile`, a label over one figure; variant `recoverable` is the Amber Wash tile.
 - `chip.tsx`: `Chip` with `state` `pending | approved | rejected | working`; pass `label` to reuse a look with other words (upload statuses do).
-- `app-bar.tsx`: `AppBar`, rendered by `app/(app)/layout.tsx` with the decision count for the reload guard. It imports `LoadSampleButton` and `NavLink` from `app/(app)/_components/` on purpose (spec 0007's component contract): the one place `components/` reaches into `app/`, so keep it that way rather than moving them.
+- `app-bar.tsx`: `AppBar`, rendered by `app/(app)/layout.tsx` with the decision count for the reload guard and `canExport` for the Export menu. It imports `LoadSampleButton`, `NavLink` and `ExportMenu` from `app/(app)/_components/` on purpose (spec 0007's component contract): the one place `components/` reaches into `app/`, so keep it that way rather than moving them.
 
 ## Conventions
 
