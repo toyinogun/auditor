@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatCents, parseMoney, parseRate, percentOfCents } from "./money";
+import {
+  formatBps,
+  formatCents,
+  parseMoney,
+  parseRate,
+  percentOfCents,
+} from "./money";
 
 describe("parseMoney", () => {
   it.each([
@@ -87,5 +93,17 @@ describe("formatCents", () => {
     [-37500, "-$375.00"],
   ])("formats %i as %s", (cents, text) => {
     expect(formatCents(cents)).toBe(text);
+  });
+});
+
+describe("formatBps", () => {
+  it.each([
+    [250, "2.5%"],
+    [400, "4%"],
+    [25, "0.25%"],
+    [0, "0%"],
+    [10000, "100%"],
+  ])("formats %i as %s", (bps, text) => {
+    expect(formatBps(bps)).toBe(text);
   });
 });
