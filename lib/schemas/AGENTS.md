@@ -7,7 +7,7 @@ The shared shapes every feature uses. Pure: no Next, DB, SDK or `fetch` imports.
 - `extraction.ts`: what a document prints, numbers kept as text. One shape per document type (invoice, contract, purchase order) plus the two CSV rows. These double as the Claude tool input and the offline JSON. The CSV parsers that produce those rows live in `lib/ingest/csv.ts`.
 - `records.ts`: domain records in integer cents with their locators (`documentId`, `filename`, `lineNo`, `rowNo`), and `AuditInput`, what the checks read.
 - `convert.ts`: `to<Type>Record` maps extraction to record and enforces the arithmetic guard (lines, subtotal, rated charges, total).
-- `finding.ts`: `Finding` with its evidence, and `DecisionInput`.
+- `finding.ts`: `Finding` with its evidence, `DecisionInput` (a reject needs a non blank reason of at most `DECISION_REASON_MAX_LENGTH`, 500) and `DecideError`.
 - `money.ts`, `keys.ts`, `dates.ts`, `enums.ts`, `result.ts`: helpers.
 - `fixtures/brief-sample.ts`: the brief's sample data. Never change a figure to make a test pass.
 - `fixtures/brief-sample-records.ts`: `briefSampleRecords(refFor?)`, the sample converted to an `AuditInput` (documents numbered 1 to 14 in fixture order by default), for tests with no database and the offline audit run. `BRIEF_SAMPLE_FILENAMES` is that fixture order.

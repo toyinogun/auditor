@@ -27,7 +27,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 7 | LLM classify & extract | Release 2 | done |
 | 8 | Upload & ingest | Release 2 | done |
 | 9 | Design system & UI foundation | Release 3 | done |
-| 10 | Review screen | Release 3 | in-progress |
+| 10 | Review screen | Release 3 | done |
 | 11 | Export | Release 3 | planned |
 | 12 | n8n Drive intake | Release 4 | planned |
 | 13 | Landing page & social card | Release 4 | planned |
@@ -142,7 +142,7 @@ spec [0007](../specs/0007-design-system-ui-foundation/index.md) · code in `app/
   - [x] `/documents` move and restyle, source guards, full green pass (AC-14, AC-15, AC-18)
 - [x] Verify it: `/check verify design system & UI foundation`
 
-### 10. Review screen · in-progress
+### 10. Review screen · done
 Summary tiles (recoverable, approved, pending, % of invoiced), findings sorted by amount, and a detail panel showing the invoice with flagged lines highlighted beside contract price and quantity received. Approve or Reject, with a reason required to reject. Holds the "Load sample data" button.
 **Done when:** on the sample data the tiles show $9,766.85 recoverable and 18.1% of invoiced, findings list largest first, each detail shows its evidence, rejecting without a reason is blocked, and decisions survive a reload.
 spec [0008](../specs/0008-review-screen/index.md) · code in `app/(app)/review/`, `app/actions.ts`, `lib/checks/invoice-view.ts`, `lib/audit/review.ts`, `lib/db/audit.ts` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1a split pane chosen; 1f reject dialog)
@@ -152,7 +152,7 @@ spec [0008](../specs/0008-review-screen/index.md) · code in `app/(app)/review/`
   - [x] Thin whole: `decideFinding`, four tiles, findings table, URL selection, invoice paper with highlights, evidence line, decision bar and reject dialog (AC-1 to AC-10, AC-16, AC-17)
   - [x] Edges, narrow screens and keyboard: unknown key caption, stale key alert, zero findings panel, stacked layout, ↑ ↓ A R (AC-3, AC-11 to AC-14)
   - [x] Logging and full green pass: `finding_decided` event, typecheck, lint, test, build, design lint (AC-15, AC-17)
-- [ ] Verify it: `/check verify review screen`
+- [x] Verify it: `/check verify review screen`
 
 ### 11. Export
 The finding log as `.xlsx` and `.csv`, including the analyst's decisions and a total row.
