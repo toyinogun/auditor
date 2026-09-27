@@ -41,6 +41,11 @@ describe("csvField (spec 0009, AC-11)", () => {
   it("writes an empty cell as nothing", () => {
     expect(csvField({ kind: "empty" })).toBe("");
   });
+
+  it("writes a count as bare digits", () => {
+    expect(csvField({ kind: "count", value: 10 })).toBe("10");
+    expect(csvField({ kind: "count", value: 0 })).toBe("0");
+  });
 });
 
 describe("toCsv (spec 0009, AC-8, AC-11)", () => {

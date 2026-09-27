@@ -136,14 +136,17 @@ describe("toXlsx (spec 0009, AC-7, AC-9)", () => {
     expect(pairs).toEqual([
       ["Audit run finished (UTC)", "2026-09-27 09:30"],
       ["Exported at (UTC)", "2026-09-27 14:05"],
-      ["Invoices checked", "10"],
+      ["Invoices checked", 10],
       ["Invoiced total", 54000],
-      ["Findings", "2"],
+      ["Findings", 2],
       ["Recoverable", 9766.85],
       ["Approved", 0],
       ["Pending", "2 of 2"],
       ["% of invoiced", "18.1%"],
     ]);
     expect(summary.getRow(4).getCell(2).numFmt).toBe(MONEY_FORMAT);
+    // Counts are plain number cells, so Excel never flags "number stored as text".
+    expect(summary.getRow(3).getCell(2).numFmt).toBeUndefined();
+    expect(summary.getRow(5).getCell(2).numFmt).toBeUndefined();
   });
 });

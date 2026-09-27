@@ -15,6 +15,7 @@ export type ExportFormat = z.infer<typeof ExportFormat>;
 export type Cell =
   | { readonly kind: "text"; readonly value: string }
   | { readonly kind: "money"; readonly cents: number }
+  | { readonly kind: "count"; readonly value: number }
   | { readonly kind: "empty" };
 
 /** What the export needs of one finding; `FindingView` from `listFindings` is one. */
@@ -71,6 +72,7 @@ export const AMOUNT_COLUMN = EXPORT_HEADER.indexOf("Amount (USD)");
 
 const text = (value: string): Cell => ({ kind: "text", value });
 const money = (cents: number): Cell => ({ kind: "money", cents });
+const count = (value: number): Cell => ({ kind: "count", value });
 const EMPTY: Cell = { kind: "empty" };
 
 const decisionCells = (decision: DecisionState): readonly Cell[] =>
@@ -109,9 +111,9 @@ const summaryPairs = (
 ): ExportTable["summary"] => [
   ["Audit run finished (UTC)", text(utcMinute(snapshot.run.finishedAt))],
   ["Exported at (UTC)", text(utcMinute(now))],
-  ["Invoices checked", text(String(snapshot.run.invoiceCount))],
+  ["Invoices checked", count(snapshot.run.invoiceCount)],
   ["Invoiced total", money(snapshot.run.invoicedTotalCents)],
-  ["Findings", text(String(snapshot.run.findingCount))],
+  ["Findings", count(snapshot.run.findingCount)],
   ["Recoverable", money(snapshot.headline.recoverableCents)],
   ["Approved", money(snapshot.totals.approvedCents)],
   [
@@ -135,8 +137,9 @@ export const exportTable = (
   summary: summaryPairs(snapshot, now),
 });
 
-/** A cell as the text a reader sees; money as a plain decimal. */
+/** A cell as the text a reader sees; money as a plain decimal, a count as its digits. */
 export const cellText = (cell: Cell): string => {
   if (cell.kind === "text") return cell.value;
+  if (cell.kind === "count") return String(cell.value);
   return cell.kind === "money" ? centsToPlain(cell.cents) : "";
 };

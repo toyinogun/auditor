@@ -15,6 +15,7 @@ const DECIDED_AT = Date.UTC(2026, 8, 27, 11, 42, 30);
 
 const text = (value: string): Cell => ({ kind: "text", value });
 const money = (cents: number): Cell => ({ kind: "money", cents });
+const count = (value: number): Cell => ({ kind: "count", value });
 const EMPTY: Cell = { kind: "empty" };
 
 describe("ExportFormat (spec 0009, AC-3)", () => {
@@ -193,9 +194,9 @@ describe("exportTable (spec 0009)", () => {
     expect(table.summary).toEqual([
       ["Audit run finished (UTC)", text("2026-09-27 09:30")],
       ["Exported at (UTC)", text("2026-09-27 14:05")],
-      ["Invoices checked", text("10")],
+      ["Invoices checked", count(10)],
       ["Invoiced total", money(5_400_000)],
-      ["Findings", text("2")],
+      ["Findings", count(2)],
       ["Recoverable", money(976_685)],
       ["Approved", money(814_100)],
       ["Pending", text("1 of 2")],

@@ -4,7 +4,7 @@ import type { Cell, ExportRow, ExportTable } from "./table";
 /**
  * The .xlsx writer (spec 0009, AC-7, AC-9): a Findings sheet and a Summary sheet. Money is a
  * number cell in dollars with a `$` format so Excel can sort and add it; totals are written
- * values. Text goes in as string cells, which Excel never evaluates, so no formula guard here.
+ * values. Counts are plain number cells. Text goes in as string cells, which Excel never evaluates, so no formula guard here.
  * exceljs builds the workbook by mutation; it stays inside this function and writes to a buffer.
  */
 
@@ -18,7 +18,7 @@ const SUMMARY_WIDTHS = [28, 18];
 const HEADER_ROW = 1;
 
 const cellValue = (cell: Cell): ExcelJS.CellValue => {
-  if (cell.kind === "text") return cell.value;
+  if (cell.kind === "text" || cell.kind === "count") return cell.value;
   return cell.kind === "money" ? cell.cents / CENTS_PER_DOLLAR : null;
 };
 
