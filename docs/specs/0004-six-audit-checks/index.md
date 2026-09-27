@@ -1,7 +1,7 @@
 # 0004. Six audit checks as pure functions over the audit input
 
 **Date**: 2026-09-27
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
