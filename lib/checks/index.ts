@@ -8,7 +8,11 @@ import { checkMissingReferences } from "./missing-reference";
 import { checkQuantityReceived } from "./quantity-received";
 import { checkSurcharges } from "./surcharge";
 
-export { summarizeFindings, type AuditSummary } from "./summary";
+export {
+  recoverableShareText,
+  summarizeFindings,
+  type AuditSummary,
+} from "./summary";
 
 /** Largest amount first, then finding key, so the list never depends on input order (AC-14). */
 const byAmountThenKey = (a: Finding, b: Finding): number =>

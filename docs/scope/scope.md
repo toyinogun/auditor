@@ -119,7 +119,7 @@ Upload PDFs and CSVs in the browser, and one ingest endpoint that both the uploa
 spec [0006](../specs/0006-upload-ingest/index.md)
 - [x] Design it (spec): `/architect upload & ingest`
 - [ ] Build it: `/develop upload & ingest`
-  - [ ] Config, file type detection and the upload folder store (AC-4, AC-5, AC-15, AC-17)
+  - [x] Config, file type detection and the upload folder store (AC-4, AC-5, AC-15, AC-17)
   - [ ] Thin whole: `ingestFile` for PDFs and CSVs, the upload action and the home page panel with headline (AC-1, AC-2, AC-9, AC-12, AC-13, AC-16)
   - [ ] Duplicates, Retry and the restart sweep (AC-8, AC-10, AC-11)
   - [ ] Demo gate and `loadSample` emptying uploads (AC-7, AC-14)

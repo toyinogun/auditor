@@ -21,7 +21,7 @@ const sumAmounts = (
     .reduce((total, finding) => total + finding.amountCents, 0);
 
 /** `part / whole` in tenths of a percent, rounded half away from zero, in whole numbers only. */
-const shareText = (part: number, whole: number): string => {
+export const recoverableShareText = (part: number, whole: number): string => {
   if (whole === 0) return "0.0%";
   const tenths = Math.floor((part * 2000 + whole) / (2 * whole));
   return `${Math.floor(tenths / 10)}.${tenths % 10}%`;
@@ -42,6 +42,9 @@ export const summarizeFindings = (
     recoverableCents,
     blockedCents: sumAmounts(findings, "block_payment"),
     findingCount: findings.length,
-    recoverableShare: shareText(recoverableCents, invoicedTotalCents),
+    recoverableShare: recoverableShareText(
+      recoverableCents,
+      invoicedTotalCents,
+    ),
   };
 };

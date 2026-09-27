@@ -1,7 +1,7 @@
 # 0006. Upload and ingest, one intake path for the browser and n8n
 
 **Date**: 2026-09-27
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -176,7 +176,7 @@ instrumentation.ts     + failInterrupted after getDb()
 
 Skateboard: the first two steps make a complete, usable upload in the browser; each later step adds one guard or path and stays shippable.
 
-1. [ ] Config and pure pieces: add `INGEST_SECRET`, `DEMO_MODE`, `MAX_UPLOAD_MB` to `lib/env.ts`; write `lib/ingest/detect.ts` (type, size, empty, CSV kind) and `lib/ingest/files.ts` (temp then rename, read, clear) with tests on a temp folder; export `recoverableShareText`; add an ESLint rule refusing `node:fs` in `lib/ingest/` outside `files.ts`. Satisfies **AC-4**, **AC-5**, **AC-15**, **AC-17**.
+1. [x] Config and pure pieces: add `INGEST_SECRET`, `DEMO_MODE`, `MAX_UPLOAD_MB` to `lib/env.ts`; write `lib/ingest/detect.ts` (type, size, empty, CSV kind) and `lib/ingest/files.ts` (temp then rename, read, clear) with tests on a temp folder; export `recoverableShareText`; add an ESLint rule refusing `node:fs` in `lib/ingest/` outside `files.ts`. Satisfies **AC-4**, **AC-5**, **AC-15**, **AC-17**.
 2. [ ] Thin whole: `saveDocumentRecords`, `claimDocument`, `listDocuments`, `getDocument`, `latestAuditRun`; `ingestFile` for new PDFs and CSVs (no dedupe branches yet) with the log line; `uploadFile` action; `upload-panel.tsx` and the home page with the list and headline. Test with the fixture fake client and in memory SQLite. Satisfies **AC-1**, **AC-2**, **AC-9**, **AC-12**, **AC-13**, **AC-16**.
 3. [ ] Duplicates, retry and restart: the `alreadyIngested` branches, `retryDocument` and the `retryUpload` action with the Retry button, the missing file case, and `failInterrupted` (rows plus `*.tmp-*` files) in `instrumentation.ts`. Satisfies **AC-8**, **AC-10**, **AC-11**.
 4. [ ] Demo gate and reset: `lib/ingest/demo.ts`, the gate inside `ingestFile`, the all 14 files test, and `loadSample` with `scripts/audit-sample/` switched to it. Satisfies **AC-7**, **AC-14**.

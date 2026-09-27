@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Finding } from "@/lib/schemas/finding";
 import { briefSampleRecords } from "@/lib/schemas/fixtures/brief-sample-records";
-import { summarizeFindings } from "./summary";
+import { recoverableShareText, summarizeFindings } from "./summary";
 
 const finding = (
   action: Finding["action"],
@@ -73,5 +73,17 @@ describe("summarizeFindings (AC-2, AC-6)", () => {
       findingCount: 0,
       recoverableShare: "0.0%",
     });
+  });
+});
+
+describe("recoverableShareText", () => {
+  it.each([
+    [976_685, 5_393_960, "18.1%"],
+    [0, 0, "0.0%"],
+    [1, 2000, "0.1%"],
+    [1, 2001, "0.0%"],
+    [5_393_960, 5_393_960, "100.0%"],
+  ])("%i of %i is %s", (part, whole, expected) => {
+    expect(recoverableShareText(part, whole)).toBe(expected);
   });
 });

@@ -18,8 +18,16 @@ const ANTHROPIC_SDK = {
 const NO_DB = {
   regex: "(^@/lib/db(/|$)|/db(/|$))",
   message:
-    "lib/extract and lib/ingest/csv.ts never touch the database (spec 0005).",
+    "lib/extract, lib/ingest/csv.ts and lib/ingest/detect.ts never touch the database.",
 };
+
+const NODE_FS = ["node:fs", "node:fs/promises", "fs", "fs/promises"].map(
+  (name) => ({
+    name,
+    message:
+      "Only lib/ingest/files.ts reads or writes the uploads folder (spec 0006).",
+  }),
+);
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -73,8 +81,29 @@ const eslintConfig = defineConfig([
       "no-restricted-imports": ["error", { patterns: [NO_DB] }],
     },
   },
+  // Only files.ts touches the uploads folder (spec 0006, AC-17); tests use temp folders.
   {
-    files: ["lib/ingest/csv.ts", "lib/ingest/csv.test.ts"],
+    files: ["lib/ingest/**/*.ts"],
+    ignores: ["lib/ingest/files.ts", "lib/ingest/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: [ANTHROPIC_SDK, ...NODE_FS] },
+      ],
+    },
+  },
+  // CSV parsing and file detection are pure (spec 0005 AC-13, spec 0006 AC-17).
+  {
+    files: ["lib/ingest/csv.ts", "lib/ingest/detect.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: [ANTHROPIC_SDK, ...NODE_FS], patterns: [NO_DB] },
+      ],
+    },
+  },
+  {
+    files: ["lib/ingest/csv.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",

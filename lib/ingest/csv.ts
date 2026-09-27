@@ -103,6 +103,25 @@ const toRows = <K extends string>(
   );
 };
 
+export type CsvKind = "receipts_csv" | "payments_csv";
+
+/**
+ * Which CSV this is, judged on the header line alone, whatever the file is called (spec 0006,
+ * AC-2). A header matching neither gives both parsers' reasons.
+ */
+export const csvKindOf = (csvText: string): Result<CsvKind> => {
+  const lineEnd = csvText.indexOf("\n");
+  const firstLine = lineEnd === -1 ? csvText : csvText.slice(0, lineEnd);
+  const { header } = parseCsv(firstLine.replace(/\r$/, ""));
+  const receipts = checkHeader(RECEIPTS_COLUMNS, header);
+  if (receipts.ok) return ok("receipts_csv");
+  const payments = checkHeader(PAYMENTS_COLUMNS, header);
+  if (payments.ok) return ok("payments_csv");
+  return err(
+    `not a receipts or payments CSV: receipts: ${receipts.error}; payments: ${payments.error}`,
+  );
+};
+
 /** `receipts.csv` text to rows, header checked. Row N counts data rows from 1. */
 export const parseReceiptsCsv = (
   csvText: string,
