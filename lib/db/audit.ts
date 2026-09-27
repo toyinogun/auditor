@@ -49,10 +49,10 @@ export const saveAuditRun = (
         ...run,
         invoiceCount: totals?.invoiceCount ?? 0,
         invoicedTotalCents: Number(totals?.invoicedTotalCents ?? 0),
-        recoverableTotalCents: parsed.reduce(
-          (total, finding) => total + finding.amountCents,
-          0,
-        ),
+        // Only money already paid out is recoverable; blocked amounts are not (spec 0004, AC-6).
+        recoverableTotalCents: parsed
+          .filter((finding) => finding.action === "recover")
+          .reduce((total, finding) => total + finding.amountCents, 0),
         findingCount: parsed.length,
       })
       .returning({ id: auditRuns.id })

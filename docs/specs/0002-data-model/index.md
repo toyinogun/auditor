@@ -104,7 +104,7 @@ Every `id` is an `integer` primary key, auto increment. `_cents`, `_bps`, `quant
 
 **Evidence item** (Zod, stored as a JSON array; the `Finding` schema enforces `evidence: z.array(EvidenceItem).min(1)`, because SQLite cannot check a JSON array's length): `{ label: string, value: string, source: { documentId: number, filename: string, locator: string } }`. Example: `{ label: "Contract price", value: "$4.85", source: { documentId: 3, filename: "C-2026-014.pdf", locator: "Schedule A, item 1" } }`.
 
-**Finding key**: `findingKey({ check, supplierKey, invoiceNumber, detail })` builds `<check>:<supplierKey>:<invoiceNumber as printed>:<detail>`, where `detail` is the SKU, the charge (`freight` or `surcharge-fuel`), or `-`. Example: `contract_price:northline industrial supply:NL-88310:NL-BRG-6204`. Feature 5 calls it; this spec owns the format.
+**Finding key**: `findingKey({ check, supplierKey, invoiceNumber, detail })` builds `<check>:<supplierKey>:<invoiceNumber as printed>:<detail>`, where `detail` is the SKU, the charge (`freight`, `surcharge-fuel`, `surcharge-energy`, or `charge-line-N` for an unrecognized charge), a missing reference (`po`, `contract`, `receipt`), or `-`. Example: `contract_price:northline industrial supply:NL-88310:NL-BRG-6204`. Feature 5 calls it; this spec owns the format.
 
 **Invoice number match key**: `normalizeInvoiceNumber(number)` uppercases and drops every character that is not a letter or digit, so `NL-88310` and `NL88310` both become `NL88310`. The duplicate check (Feature 5) matches on it. Finding keys and stored columns keep the number as printed.
 
@@ -147,10 +147,10 @@ Every `id` is an `integer` primary key, auto increment. `_cents`, `_bps`, `quant
 | `setDocumentStatus` | `has_text_layer` | Feature 7 (unpdf text check); null for CSVs and offline loads |
 | every write | `*_at` | the `now` parameter (ms), defaulted to `Date.now()` at the edge, so tests are deterministic |
 | `saveAuditRun` | `invoiced_total_cents`, `invoice_count` | sum and count of `invoices.total_cents` across all invoices, duplicates included |
-| `saveAuditRun` | `recoverable_total_cents`, `finding_count` | sum and count of the findings passed in |
+| `saveAuditRun` | `recoverable_total_cents`, `finding_count` | sum of the findings passed in with action `recover` (spec 0004, AC-6), and the count of all of them |
 | finding | `amount_cents`, `title`, `calculation`, `evidence` | the check functions (Feature 5), built from records only |
 | evidence | `filename` | `documents.filename`, carried on each record by `loadAuditInput` |
-| evidence | `locator` | the record's `clause` (contract prices, surcharges, freight), `"line N"` from `lineNo` (invoice lines and charges, PO lines), `"row N"` from `rowNo` (CSVs); for invoice level facts a fixed label: `"Invoice number"`, `"Invoice date"`, `"Subtotal"`, `"Invoice total"`, `"PO number"` |
+| evidence | `locator` | the record's `clause` (contract prices, surcharges, freight), `"line N"` from `lineNo` (invoice lines, PO lines), `"charge line N"` from a charge's `lineNo` (invoice charges, spec 0004), `"row N"` from `rowNo` (CSVs); for invoice level facts a fixed label: `"Invoice number"`, `"Invoice date"`, `"Subtotal"`, `"Invoice total"`, `"PO number"` |
 | duplicate check | invoice match key | `normalizeInvoiceNumber(invoiceNumber)` |
 | `listFindings` | decision state | `decisions` row by `finding_key`; pending when no row or `decisions.amount_cents ≠ findings.amount_cents` |
 | contract `clause`, `freightClause`, `surchargeClause` | clause text | printed on the contract PDF (Feature 4 must print them), extracted by Feature 7 |

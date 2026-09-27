@@ -10,6 +10,7 @@ The shared shapes every feature uses. Pure: no Next, DB, SDK or `fetch` imports.
 - `finding.ts`: `Finding` with its evidence, and `DecisionInput`.
 - `money.ts`, `keys.ts`, `dates.ts`, `enums.ts`, `result.ts`: helpers.
 - `fixtures/brief-sample.ts`: the brief's sample data. Never change a figure to make a test pass.
+- `fixtures/brief-sample-records.ts`: `briefSampleRecords(refFor?)`, the sample converted to an `AuditInput` (documents numbered 1 to 14 in fixture order by default), for tests with no database.
 - `sample-manifest.ts`: `SampleManifest`, the shape of `public/sample/manifest.json` (sha256, size, kind and text layer flag for each sample file). App code reads the manifest with it, never by importing from `scripts/`.
 
 ## Conventions

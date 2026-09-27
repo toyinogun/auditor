@@ -8,7 +8,7 @@ The only code that touches SQLite (better-sqlite3 + Drizzle). Governing spec: [0
 - `client.ts`: `openDb(file)` opens SQLite with WAL and foreign keys on, then applies the migrations in `drizzle/`. `getDb()` is the app's single connection at `$DATA_DIR/auditor.db`; `instrumentation.ts` opens it at server start.
 - `documents.ts`: `insertDocument` (dedupes by `sha256`), `setDocumentStatus`.
 - `records.ts`: `save<Type>` per record type (`saveContract` refuses an overlapping term for the same supplier), `loadAuditInput`.
-- `audit.ts`: `saveAuditRun` (replaces all findings in one transaction), `listFindings`, `decide`.
+- `audit.ts`: `saveAuditRun` (replaces all findings in one transaction; `recoverable_total_cents` sums only `recover` findings, spec 0004 AC-6), `listFindings`, `decide`.
 - `admin.ts`: `resetAll`.
 - `testing.ts`: test support (`seedBriefSample`, `TEST_NOW`). Never import it from app code.
 

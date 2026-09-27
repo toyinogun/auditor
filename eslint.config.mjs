@@ -24,6 +24,29 @@ const eslintConfig = defineConfig([
       "import/no-default-export": "off",
     },
   },
+  // lib/checks stays pure (spec 0004, AC-15): shared schemas, zod and its own files only.
+  {
+    files: ["lib/checks/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: "^(?!@/lib/schemas/|zod$|\\./|vitest$)",
+              message:
+                "lib/checks is pure: import only from @/lib/schemas/*, zod or lib/checks itself.",
+            },
+          ],
+        },
+      ],
+      "no-restricted-properties": [
+        "error",
+        { object: "Date", property: "now", message: "lib/checks is pure." },
+        { object: "Math", property: "random", message: "lib/checks is pure." },
+      ],
+    },
+  },
   // Last, so formatting rules never fight Prettier.
   prettier,
   globalIgnores([

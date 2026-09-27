@@ -94,6 +94,20 @@ describe("saveAuditRun (AC-12)", () => {
     });
   });
 
+  it("counts only recover findings in the recoverable total (spec 0004, AC-6)", () => {
+    const [recover, review] = sampleFindings(db);
+    const blocked: Finding = {
+      ...recover,
+      findingKey: `${recover.findingKey}-blocked`,
+      action: "block_payment",
+      amountCents: 814100,
+    };
+    saveAuditRun(db, RUN, [recover, blocked, review]);
+    const [run] = db.select().from(schema.auditRuns).all();
+    expect(run.recoverableTotalCents).toBe(37500);
+    expect(run.findingCount).toBe(3);
+  });
+
   it("leaves exactly one set of findings when run twice", () => {
     saveAuditRun(db, RUN, sampleFindings(db));
     const second = saveAuditRun(db, RUN, sampleFindings(db));
