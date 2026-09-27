@@ -164,6 +164,7 @@ The public face of the repo: README with a screenshot, how to run it, and how th
 ## Deferred
 Out of scope for this build, kept so the plan stays honest.
 - **Logins and multi tenancy**: separate accounts and workspaces · needs a decision · GA
+- **Upwork prospect accounts**: once logins exist, create an account with its own username and password for each client you send an Upwork proposal to (where it fits), so they can use it live under that login · needs a decision · after logins
 - **Accounting system push**: send approved claims to QuickBooks or Xero (the brief's next step) · needs a decision
 - **Visitor uploads on the public demo**: real files with a rate limit or the visitor's own key · needs a decision
 - **CI on push**: GitHub Actions for typecheck, test and build, skipped for now (from spec 0001)

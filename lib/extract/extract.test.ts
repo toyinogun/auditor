@@ -123,6 +123,13 @@ describe("extractDocument, happy path (AC-1, AC-3)", () => {
   });
 });
 
+const OVERLOADED = new APIError(
+  529,
+  { type: "error" },
+  "Overloaded",
+  new Headers(),
+);
+
 const NL_88203 = BRIEF_SAMPLE.invoices[1];
 
 const badLineAmount = toolUse(
@@ -179,6 +186,24 @@ describe("extractDocument, repair once (AC-4)", () => {
     expect(result.error).toContain("after 2 attempts");
     expect(logged()[0]).toMatchObject({ outcome: "invalid", attempts: 2 });
   });
+
+  it("fails as an API error when the repair call itself fails", async () => {
+    const { result, deps } = await extractSample("NL-88203.pdf", [
+      badLineAmount,
+      OVERLOADED,
+    ]);
+    expect(deps.requests).toHaveLength(2);
+    expect(result).toEqual({ ok: false, error: "API error: HTTP 529" });
+    expect(logged()).toEqual([
+      expect.objectContaining({
+        outcome: "api_error",
+        attempts: 2,
+        inputMode: "text",
+        inputTokens: 1000,
+        outputTokens: 200,
+      }),
+    ]);
+  });
 });
 
 const REFUSAL = fakeMessage([], "refusal");
@@ -189,12 +214,6 @@ const CUT_OFF = fakeMessage(
 const TEXT_ONLY = fakeMessage(
   [{ type: "text", text: "This is an invoice." } as ContentBlock],
   "end_turn",
-);
-const OVERLOADED = new APIError(
-  529,
-  { type: "error" },
-  "Overloaded",
-  new Headers(),
 );
 
 describe("extractDocument, no repair (AC-5, AC-6)", () => {
@@ -234,6 +253,15 @@ describe("extractDocument, no repair (AC-5, AC-6)", () => {
       error: "ANTHROPIC_API_KEY is not set",
     });
     expect(deps.requests).toHaveLength(0);
+    expect(logged()).toEqual([
+      expect.objectContaining({
+        outcome: "api_error",
+        attempts: 0,
+        inputMode: "text",
+        inputTokens: 0,
+        outputTokens: 0,
+      }),
+    ]);
   });
 
   it("throws for an error that is not an API error (a bug)", async () => {
@@ -256,7 +284,12 @@ describe("extractDocument, input guards (AC-7)", () => {
     const result = await extractDocument({ filename: "x.pdf", bytes }, deps);
     expect(result).toEqual({ ok: false, error });
     expect(deps.requests).toHaveLength(0);
-    expect(logged()[0]).toMatchObject({ outcome: "bad_input", attempts: 0 });
+    expect(logged()[0]).toMatchObject({
+      outcome: "bad_input",
+      attempts: 0,
+      kind: null,
+      inputMode: null,
+    });
   });
 });
 
