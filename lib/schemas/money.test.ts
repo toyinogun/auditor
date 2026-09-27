@@ -39,7 +39,7 @@ describe("parseRate", () => {
     ["3.0", 300],
     ["0.25", 25],
     ["100", 10000],
-  ])("reads %s%% as %i basis points", (text, bps) => {
+  ])("reads %s percent as %i basis points", (text, bps) => {
     expect(parseRate(text, "rate")).toEqual({ ok: true, value: bps });
   });
 
