@@ -35,6 +35,7 @@ pnpm format       # Prettier write (format:check to verify)
 pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
 pnpm exec drizzle-kit generate  # New SQL migration in drizzle/ after editing lib/db/schema.ts (applied at server start)
 pnpm generate:sample  # Rewrite public/sample/ from the fixture (committed output, never edit by hand)
+pnpm audit:sample  # Offline audit: reset $DATA_DIR/auditor.db, load the sample, run the checks, store the findings
 ```
 
 ## Specs
