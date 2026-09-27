@@ -1,6 +1,6 @@
 # 0005. LLM classify and extract, one forced tool call per document
 
-**Date**: 2026-09-27
+**Date**: 2026-09-27 · updated 2026-09-27 (AC-10: a record the database refuses stores nothing)
 **Status**: In Progress
 
 ## Summary
@@ -30,7 +30,7 @@ Each PDF goes to Claude in one call that must use exactly one of four tools: `re
   - The summary reads 8 findings, $9,766.85 recoverable, 18.1% of $53,939.60.
 
   Every mismatch prints as `<filename>: <field path>: live <value>, offline <value>`. A findings mismatch uses the filename of the finding's invoice and the path `finding <findingKey>` (a finding on only one side prints `missing` for the other). Evidence is not compared separately: the checks are pure, so equal records give equal evidence. The exit code is 0 only when there are no mismatches.
-- **AC-10**: Atomic store. Only when all 12 PDFs extract and both CSVs parse, one transaction runs `resetAll`, stores the 14 documents with `insertDocument` in manifest order (the same order `runSampleAudit` uses, so document ids and the duplicate check's `documentId` tie break match offline; source `sample`, manifest hashes), calls `setDocumentStatus(db, id, { status: "extracting", hasTextLayer })` for each PDF (AC-2's value; the record savers never write it and leave it untouched), saves the records, and runs `runAudit`. A record or findings mismatch (AC-9) still stores the run and exits 1. Any extraction or parse failure leaves the database as it was and exits 1, after printing every document's outcome. A rerun replaces the earlier run.
+- **AC-10**: Atomic store. Only when all 12 PDFs extract and both CSVs parse, one transaction runs `resetAll`, stores the 14 documents with `insertDocument` in manifest order (the same order `runSampleAudit` uses, so document ids and the duplicate check's `documentId` tie break match offline; source `sample`, manifest hashes), calls `setDocumentStatus(db, id, { status: "extracting", hasTextLayer })` for each PDF (AC-2's value; the record savers never write it and leave it untouched), saves the records, and runs `runAudit`. A record or findings mismatch (AC-9) whose records save cleanly still stores the run and exits 1. A record the database refuses (a save guard from spec 0002, such as an invoice misread as a second contract that overlaps a real one) rolls the whole transaction back and stores nothing: that file's outcome reads `not stored: <reason>`, the run is reported like a failed extraction, and it exits 1. The refusal is named on the file whose save failed, which in manifest order may be the correct document rather than the misread one; the misread shows in its own outcome line (for example `BW-5521.pdf: contract`). Any extraction or parse failure, or a refused record, leaves the database as it was and exits 1, after printing every document's outcome. A rerun replaces the earlier run.
 - **AC-11**: The scan. `NL88310.pdf` is sent as a PDF `document` block, reports `hasTextLayer: false`, and its records match the fixture under AC-9.
 - **AC-12**: Logging. Each extraction logs one JSON line through `lib/log.ts` with `event: "extraction"`, `filename`, `kind` (or `null`), `inputMode` (`text` or `pdf`), `attempts`, `inputTokens`, `outputTokens`, `ms` and `outcome` (`ok`, `invalid`, `rejected`, `refused`, `cut_off`, `api_error`, `bad_input`). It never logs document text, extracted values, the failure reason text or the API key.
 - **AC-13**: Boundaries. Only `lib/extract/` imports `@anthropic-ai/sdk`, and `lib/extract/` and `lib/ingest/csv.ts` import nothing from `lib/db/`. ESLint `no-restricted-imports` rules fail the build on either.
@@ -121,7 +121,7 @@ Feature 8 maps these onto the `documents.status` moves (`queued` → `extracting
 | `validateToolCall(message, filename)` | `lib/extract/validate.ts` | SDK `Message` | `Result<{ kind, extraction }>` with a failure `type` (`invalid`, `rejected`, `refused`, `cut_off`, `no_tool`) | pure | as listed |
 | `parseReceiptsCsv(text)`, `parsePaymentsCsv(text)` | `lib/ingest/csv.ts` | CSV text | `Result<readonly Row[]>` | pure | bad header, bad cell count |
 | `compareRecords(live, offline)`, `compareFindings(live, offline)` | `lib/audit/compare.ts` | two `AuditInput`s, two finding lists | `readonly Mismatch[]` (`filename`, `path`, `live`, `offline`) | pure | none |
-| `storeLiveSample(db, clock, manifest, extracted, csv)` | `lib/audit/live.ts` | extracted documents keyed by filename, parsed CSV rows | `{ runId, summary, refFor }` | server only | a save failure throws and rolls back (a bug, as in `runSampleAudit`) |
+| `storeLiveSample(db, clock, manifest, extracted, csv)` | `lib/audit/live.ts` | extracted documents keyed by filename, parsed CSV rows | `Result<{ runId, summary, refFor, records, findings }, { filename, error }>` | server only | a save the database refuses (records come from the model, so this is expected) rolls back and returns `err` naming the file, through `trySaveAuditInput` in `lib/audit/store.ts`; any other throw is a bug and still throws |
 | `pnpm audit:live [--dump]` | `scripts/audit-live/index.ts` | `$DATA_DIR`, `ANTHROPIC_API_KEY`; `--dump` writes each extraction to `$DATA_DIR/live-dump/<filename>.json` | per document lines, mismatches, summary; exit 0 or 1 | local operator | key not set, extraction failures, mismatches |
 
 **Value sourcing**:
@@ -168,7 +168,7 @@ Constants (not env): `SCAN_CHARS_PER_PAGE = 20`, `MAX_PAGES = 20`, `EXTRACT_MAX_
 - Guards: random bytes, a 21 page PDF, and a truncated PDF each give `err` with zero calls, verifies **AC-7**.
 - CSV: both sample CSVs parse to the fixture rows; a missing `sku` column and a short row give the named errors, verifies **AC-8**.
 - Compare: `compareRecords` on identical inputs gives `[]`; changing one `unitPriceCents` and one clause's inner spacing gives exactly one mismatch (the price), verifies **AC-9**.
-- Atomic store: `storeLiveSample` with the fixture extractions in `:memory:` stores 8 findings and $9,766.85; a run with one failed extraction never calls it and leaves an earlier run intact, verifies **AC-10**.
+- Atomic store: `storeLiveSample` with the fixture extractions in `:memory:` stores 8 findings and $9,766.85; a run with one failed extraction never calls it and leaves an earlier run intact; an invoice read as a contract overlapping `C-2026-014` stores nothing, reports `not stored: …` on `C-2026-014.pdf`, and leaves an earlier run intact, verifies **AC-10**.
 - Logging: a spy on `logEvent` sees the listed fields and no extraction values, verifies **AC-12**.
 - Boundary: an ESLint fixture importing `@anthropic-ai/sdk` outside `lib/extract/`, and one importing `lib/db/` from `lib/extract/`, each fail lint, verifies **AC-13**.
 - Stored flag: after `storeLiveSample`, `NL88310.pdf`'s document row has `has_text_layer = 0` and every other PDF `1`, verifies **AC-10**, **AC-11**.

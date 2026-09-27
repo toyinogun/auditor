@@ -111,7 +111,7 @@ spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract
   - [x] Thin whole: strict tools, prompt, request and the text PDF path on a fake client, then the gated live smoke test (AC-1, AC-3, AC-14)
   - [x] Scan path and input guards, then every failure path: repair turn, reject, refusal, cut off, API errors (AC-2, AC-4 to AC-7, AC-11)
   - [x] CSV parsers moved to `lib/ingest/csv.ts`, then `pnpm audit:live` with compare and the atomic store, run green on a real key (AC-8 to AC-11)
-- [ ] Verify it: `/check verify LLM classify & extract`
+- [x] Verify it: `/check verify LLM classify & extract`
 
 ### 8. Upload & ingest · needs a decision
 Upload PDFs and CSVs in the browser, and one ingest endpoint that both the upload and the n8n workflow post to. On the public demo, uploads are limited to the sample files.

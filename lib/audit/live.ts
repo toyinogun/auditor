@@ -31,10 +31,11 @@ import {
 } from "./compare";
 import { runAudit, type AuditRunResult } from "./run";
 import {
-  saveAuditInput,
   storeManifestDocuments,
+  trySaveAuditInput,
   type ManifestFiles,
   type RefFor,
+  type SaveFailure,
 } from "./store";
 
 /**
@@ -174,10 +175,38 @@ const liveRecords = (
 
 /**
  * The AC-10 transaction: reset, store the 14 documents in manifest order (so ids match the
- * offline run), record each PDF's text layer flag, save the records and run the checks. A throw
- * rolls it all back; nested `lib/db` transactions run as savepoints (see `sample.ts`).
+ * offline run), record each PDF's text layer flag, save the records and run the checks. A record
+ * the database refuses (the model's misread can break a save guard) rolls it all back and comes
+ * back as `err`; nested `lib/db` transactions run as savepoints (see `sample.ts`).
  */
 export const storeLiveSample = (
+  db: Db,
+  clock: () => number,
+  manifest: ManifestFiles,
+  extracted: ReadonlyMap<string, ExtractedDocument>,
+  csv: LiveCsv,
+): Result<StoredLiveRun, SaveFailure> => {
+  try {
+    return ok(storeLiveSampleOrRollBack(db, clock, manifest, extracted, csv));
+  } catch (error) {
+    const failure = rolledBackFor(error);
+    if (failure === null) throw error;
+    return err(failure);
+  }
+};
+
+/** Thrown inside the transaction only to roll it back when the database refuses a record. */
+const rollBack = (failure: SaveFailure): Error =>
+  Object.assign(new Error(`${failure.filename}: ${failure.error}`), {
+    saveFailure: failure,
+  });
+
+const rolledBackFor = (error: unknown): SaveFailure | null =>
+  error instanceof Error && "saveFailure" in error
+    ? (error.saveFailure as SaveFailure)
+    : null;
+
+const storeLiveSampleOrRollBack = (
   db: Db,
   clock: () => number,
   manifest: ManifestFiles,
@@ -203,7 +232,7 @@ export const storeLiveSample = (
       ),
     );
     const records = liveRecords(manifest, extracted, csv, refFor);
-    saveAuditInput(
+    const saved = trySaveAuditInput(
       db,
       records,
       {
@@ -212,6 +241,7 @@ export const storeLiveSample = (
       },
       now,
     );
+    if (!saved.ok) throw rollBack(saved.error);
     const run = runAudit(db, clock);
     return { ...run, refFor, records, findings: listFindings(db) };
   });
@@ -367,10 +397,23 @@ export const runLiveAudit = async (
       payments: payments.value,
     },
   );
+  if (!stored.ok) {
+    const { filename, error } = stored.error;
+    return {
+      outcomes: outcomes.map((outcome) =>
+        outcome.filename === filename
+          ? { filename, result: err(`not stored: ${error}`) }
+          : outcome,
+      ),
+      extracted,
+      stored: null,
+      mismatches: [],
+    };
+  }
   return {
     outcomes,
     extracted,
-    stored,
-    mismatches: liveMismatches(manifest, extracted, stored),
+    stored: stored.value,
+    mismatches: liveMismatches(manifest, extracted, stored.value),
   };
 };

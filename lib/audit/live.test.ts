@@ -106,6 +106,44 @@ describe("runLiveAudit", () => {
     expect(listFindings(db)).toHaveLength(8);
   });
 
+  it("reports a record the database refuses, and leaves an earlier run intact (AC-10)", async () => {
+    runSampleAudit(db, clock);
+    const before = db.select().from(auditRuns).all();
+    const overlapping = fakeMessage([
+      {
+        type: "tool_use",
+        id: "toolu_x",
+        name: "record_contract",
+        input: BRIEF_SAMPLE.contracts[0].extraction,
+      } as never,
+    ]);
+    const report = await runLiveAudit(db, SAMPLE_MANIFEST, {
+      extract: await fixtureClient(new Map([["BW-5521.pdf", [overlapping]]])),
+      readFile: readSample,
+      clock: () => TEST_NOW + 1,
+    });
+
+    expect(report.stored).toBeNull();
+    expect(report.outcomes).toHaveLength(14);
+    const failed = report.outcomes.filter((o) => !o.result.ok);
+    expect(failed.map((o) => [o.filename, o.result])).toEqual([
+      [
+        "C-2026-014.pdf",
+        {
+          ok: false,
+          error: expect.stringMatching(
+            /^not stored: contract C-2026-014 .* overlaps C-2026-014/,
+          ),
+        },
+      ],
+    ]);
+    expect(
+      report.outcomes.find((o) => o.filename === "BW-5521.pdf")?.result,
+    ).toEqual({ ok: true, value: "contract, attempts 1" });
+    expect(db.select().from(auditRuns).all()).toEqual(before);
+    expect(listFindings(db)).toHaveLength(8);
+  });
+
   it("does not store when a CSV fails to parse", async () => {
     const readFile = async (filename: string) =>
       filename === "receipts.csv"

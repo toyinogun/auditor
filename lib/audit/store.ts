@@ -9,7 +9,7 @@ import {
   saveReceipts,
 } from "@/lib/db/records";
 import type { AuditInput, DocumentRef } from "@/lib/schemas/records";
-import { orThrow } from "@/lib/schemas/result";
+import { err, ok, orThrow, type Result } from "@/lib/schemas/result";
 import type { SampleManifest } from "@/lib/schemas/sample-manifest";
 
 /**
@@ -54,29 +54,62 @@ export const storeManifestDocuments = (
   };
 };
 
-/** Saves every record against its stored document. A save that fails here is a bug, so it throws. */
+export type CsvRefs = {
+  readonly receipts: DocumentRef;
+  readonly payments: DocumentRef;
+};
+
+/** The first save the database refused, and the file whose record it was. */
+export type SaveFailure = { readonly filename: string; readonly error: string };
+
+/**
+ * Saves every record against its stored document, stopping at the first save the database
+ * refuses (an overlapping contract, say). Live records come from the model, so a refusal is an
+ * expected failure there; the caller rolls back its transaction.
+ */
+export const trySaveAuditInput = (
+  db: Db,
+  input: AuditInput,
+  csvRefs: CsvRefs,
+  now: number,
+): Result<void, SaveFailure> => {
+  const { receipts, payments } = csvRefs;
+  const saves: readonly (readonly [string, () => Result<unknown>])[] = [
+    ...input.contracts.map(
+      (record) =>
+        [record.filename, () => saveContract(db, record, now)] as const,
+    ),
+    ...input.purchaseOrders.map(
+      (record) =>
+        [record.filename, () => savePurchaseOrder(db, record, now)] as const,
+    ),
+    ...input.invoices.map(
+      (record) =>
+        [record.filename, () => saveInvoice(db, record, now)] as const,
+    ),
+    [
+      receipts.filename,
+      () => saveReceipts(db, receipts.documentId, input.receipts, now),
+    ],
+    [
+      payments.filename,
+      () => savePayments(db, payments.documentId, input.payments, now),
+    ],
+  ];
+  for (const [filename, save] of saves) {
+    const saved = save();
+    if (!saved.ok) return err({ filename, error: saved.error });
+  }
+  return ok(undefined);
+};
+
+/** Saves every record from a committed fixture. A refusal here is a bug, so it throws. */
 export const saveAuditInput = (
   db: Db,
   input: AuditInput,
-  csvRefs: { readonly receipts: DocumentRef; readonly payments: DocumentRef },
+  csvRefs: CsvRefs,
   now: number,
 ): void => {
-  input.contracts.forEach((record) =>
-    orThrow(record.filename, saveContract(db, record, now)),
-  );
-  input.purchaseOrders.forEach((record) =>
-    orThrow(record.filename, savePurchaseOrder(db, record, now)),
-  );
-  input.invoices.forEach((record) =>
-    orThrow(record.filename, saveInvoice(db, record, now)),
-  );
-  const { receipts, payments } = csvRefs;
-  orThrow(
-    receipts.filename,
-    saveReceipts(db, receipts.documentId, input.receipts, now),
-  );
-  orThrow(
-    payments.filename,
-    savePayments(db, payments.documentId, input.payments, now),
-  );
+  const saved = trySaveAuditInput(db, input, csvRefs, now);
+  if (!saved.ok) orThrow(saved.error.filename, err(saved.error.error));
 };
