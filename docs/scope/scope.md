@@ -19,7 +19,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | # | Feature | Phase | Status |
 |---|---------|-------|--------|
 | 1 | Stack & architecture | Foundation | done |
-| 2 | Coding standards & tooling | Foundation | in-progress |
+| 2 | Coding standards & tooling | Foundation | done |
 | 3 | Data model | Foundation | planned |
 | 4 | Sample data generator | Release 1 | planned |
 | 5 | Six audit checks | Release 1 | planned |
@@ -44,7 +44,7 @@ spec [0001](../specs/0001-stack-architecture/index.md) · code in `/` (repo root
 - [x] Scaffold from the decision: `/develop stack & architecture`
 - [x] Verify it: `/check verify stack & architecture`
 
-### 2. Coding standards & tooling · in-progress
+### 2. Coding standards & tooling · done
 Capture conventions from the real scaffolded project, then install lint, format, type strictness and test running so every later feature follows them.
 **Done when:** root `AGENTS.md` reflects the real stack, and lint, format, typecheck and the test runner all run clean.
 - [x] Capture conventions + tooling choices: `/audit`
