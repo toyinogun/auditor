@@ -1,6 +1,6 @@
 # 0004. Six audit checks as pure functions over the audit input
 
-**Date**: 2026-09-27
+**Date**: 2026-09-27 · updated 2026-09-27 (calculation wording outside the sample)
 **Status**: In Progress
 
 ## Summary
@@ -88,7 +88,7 @@ In memory shapes added in `lib/checks/` (readonly, not stored):
 
 | Check | Runs on | Fires when | Amount | Detail | Title |
 |---|---|---|---|---|---|
-| `duplicate` | all invoices | a later copy in a duplicate group (AC-4) | copy's `totalCents` | `-` | `Duplicate of NL-88310, paid twice` or `Duplicate of NL-88310, unpaid` |
+| `duplicate` | all invoices | a later copy in a duplicate group (AC-4) | copy's `totalCents` | `-` | recover: `Duplicate of NL-88310, paid <times>`; block: `Duplicate of NL-88310, unpaid` (no payment), `…, only the original paid` (1 payment) or `…, only earlier invoices paid` (2 or more) |
 | `contract_price` | originals with a contract in force | a SKU billed above its contract price (AC-13) | Σ (billed − contract) × qty | SKU | `<description> billed above contract price` |
 | `quantity_received` | originals with a known PO | running billed total passes received (AC-10) | excess × contract price, else lowest billed price | SKU, or `receipt` | `<excess> × <description> billed, not received`, or `No goods receipt found for <PO>` |
 | `surcharge` | typed surcharges: originals with a contract in force; kind `other`: every original | not permitted, or above cap (AC-11) | full amount, or amount − cap | `surcharge-<type>`, or `charge-line-N` | `<Type> surcharge not permitted`, `<Type> surcharge above cap`, or `Unrecognized charge: <label>` |
@@ -96,9 +96,9 @@ In memory shapes added in `lib/checks/` (readonly, not stored):
 | `missing_reference` | originals | no PO, unknown PO, no contract in force, SKU with no contract price (AC-9) | 0 | `po`, `contract`, or SKU | `No PO`, `PO <number> not found`, `No contract in force on <date>`, `No contract price for <SKU>` |
 
 **Calculation templates** (money through `formatCents`, rates through `formatBps`, quantities with `toLocaleString("en-US")`):
-- Duplicate: `Invoice total <total>, paid twice (ap_payments.csv rows <a>, <b>) = <total>`; unpaid: `Invoice total <total>, not yet paid = <total> to block`. List every group payment row.
+- Duplicate, recover: `Invoice total <total>, paid <times> (<payment rows>) = <total>`. Block with no group payment: `Invoice total <total>, not yet paid = <total> to block`. Block with p group payments (p ≥ 1): `Invoice total <total>, paid <times> (<payment rows>), which covers only the original = <total> to block` when p = 1, or `…, which covers only the original and <p − 1> earlier copy/copies = <total> to block` when p ≥ 2 (the payments go to the group in AC-4 order, so they cover the original and the earliest copies first, whichever member's number they were paid against). `<times>` is `once`, `twice`, or `<p> times`, the real count. `<payment rows>` lists every group payment row as `ap_payments.csv row <n>` (one row) or `ap_payments.csv rows <a>, <b>` (several).
 - Contract price: `(<billed> − <contract>) × <qty> = <amount>`; several lines of one SKU are joined with ` + ` before `= <amount>`.
-- Quantity: `(<billed to date> billed − <received> received) × <price> = <amount>`; when earlier invoices on the PO were already over, insert ` − <already over> already flagged` after the received term.
+- Quantity: `(<billed> billed − <received> received) × <price> = <amount>` when no earlier invoice on the PO billed the SKU. When one did, the billed term splits into this invoice and the earlier ones, so the reader never sees more units than the invoice shows: `(<billed here> billed + <billed earlier> billed earlier on <PO> − <received> received) × <price> = <amount>`, for example `(100 billed + 300 billed earlier on PO-4502 − 360 received) × $9.75 = $390.00`. When earlier invoices on the PO were already over, insert ` − <already over> already flagged` after the received term.
 - Surcharge, not permitted: `<amount> <type> surcharge, none permitted = <amount>`. Above cap: `<billed> − <cap %> × <subtotal> = <excess>`. When several charges of one type are combined, the billed term becomes `(<a> + <b>)`, for example `($150.00 + $156.00) − 2.5% × $7,650.00 = $114.75`. Other charge and every 0 cent finding: `Review only, no amount claimed`.
 - Freight: `<amount> freight, included in contract price = <amount>`.
 
@@ -167,9 +167,9 @@ Shared helpers stay private to `lib/checks/`: `evidence.ts` (evidence builders a
 **Critical test scenarios**:
 - Happy path: `runChecks(briefSampleRecords())` equals the AC-1 table, the calculations equal AC-7, and the summary equals AC-2, verifies **AC-1**, **AC-2**, **AC-7**.
 - Clean invoice: NL-88121 has no finding, verifies **AC-3**.
-- Duplicate: NL88310 flagged, NL-88310 kept; dropping the NL88310 payment row turns it into `block_payment` with 814100 cents and makes `recoverableCents` 162585 and `blockedCents` 814100; a third copy with 2 payments is `block_payment`, verifies **AC-4**, **AC-5**, **AC-6**.
+- Duplicate: NL88310 flagged, NL-88310 kept; dropping the NL88310 payment row turns it into `block_payment` with 814100 cents and makes `recoverableCents` 162585 and `blockedCents` 814100; a third copy with 2 payments is `block_payment`; each blocked copy's calculation says `not yet paid` only with no group payment, and otherwise names the payment rows and what they cover (including a payment made against the copy itself); a third copy paid 3 times reads `paid 3 times`, verifies **AC-4**, **AC-5**, **AC-6**, **AC-7**.
 - Unpaid overcharge: removing the NL-88203 payment makes its two findings `block_payment`, verifies **AC-6**.
-- Partial invoices: split NL-88203's 400 V-belts into invoices of 300 and 100 on PO-4502; only the second is flagged for 40, verifies **AC-10**.
+- Partial invoices: split NL-88203's 400 V-belts into invoices of 300 and 100 on PO-4502; only the second is flagged for 40, and its calculation reads `(100 billed + 300 billed earlier on PO-4502 − 360 received) × $9.75 = $390.00`, verifies **AC-7**, **AC-10**.
 - Missing references: BW-5530 without PO; an invoice with PO-9999; an invoice dated 2025-12-15; a SKU absent from the contract, each one `review_only` finding, and price, surcharge and freight skip the no contract invoice, verifies **AC-9**.
 - Surcharges and freight: an `other` charge; a capped fuel surcharge at, and 1 cent above, the cap; freight on a `not_stated` contract, verifies **AC-11**, **AC-12**.
 - Same SKU twice: two bearing lines at $5.10 and $5.00 give one finding for their summed difference, verifies **AC-13**.
@@ -200,7 +200,7 @@ Skateboard: first a thin but complete audit (duplicates plus the summary, with t
 - Surcharges are not reduced for overbilled units: a fuel surcharge on a subtotal inflated by a price or quantity overcharge is only checked against the cap on the billed subtotal. This matches the brief (NL-88203) but leaves some money on the table.
 - "Same PO and same total" can flag two genuine equal partial invoices on one PO. The analyst rejects it; nothing auto recovers.
 - A false duplicate also hides that copy's other findings (price, quantity, charges), because the copy is left out of every other check, and rejecting the duplicate finding does not bring them back (`runChecks` does not read decisions). Accepted for v1.
-- A later copy of a duplicate is flagged even when only it (not the original) was paid; the block then sits on the wrong copy. Rare, and visible in the evidence.
+- A later copy of a duplicate is flagged even when only it (not the original) was paid; the block then sits on the wrong copy. Rare, and visible: the evidence lists the payment row, and the calculation says the payment is counted against the original.
 - Receipt dates are ignored: goods received after the invoice date still count as received.
 - The duplicate rule treats "paid" as any ledger row, so a partial payment counts as paid.
 

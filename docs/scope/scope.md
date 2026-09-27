@@ -88,7 +88,7 @@ spec [0004](../specs/0004-six-audit-checks/index.md) · code in `lib/checks/`, `
   - [x] Duplicates, summary, `runChecks` pipeline, full acceptance test written, `saveAuditRun` recover only total (AC-2, AC-4 to AC-6)
   - [x] Contract price, missing reference and quantity received checks (AC-9, AC-10, AC-13)
   - [x] Surcharge and freight checks; acceptance test green, evidence, key, schema and shuffle tests (AC-1, AC-3, AC-7, AC-8, AC-11, AC-12, AC-14)
-- [ ] Verify it: `/check verify six audit checks`
+- [x] Verify it: `/check verify six audit checks`
 - [x] Test it: `/test six audit checks`
 
 ### 6. Offline audit run
