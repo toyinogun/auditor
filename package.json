@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "generate:sample": "tsx scripts/generate-sample/index.ts",
+    "audit:sample": "tsx --conditions=react-server scripts/audit-sample/index.ts",
     "prepare": "husky"
   },
   "lint-staged": {
