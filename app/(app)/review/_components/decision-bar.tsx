@@ -1,12 +1,14 @@
 "use client";
 
 import { CheckIcon, LoaderCircleIcon, XIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { decideFinding, type DecideFindingResult } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import type { DecisionState } from "@/lib/schemas/finding";
 import {
+  alertShows,
+  type BarAlert,
   findingHref,
   NOT_SAVED,
   REASON_REQUIRED,
@@ -44,9 +46,10 @@ export function DecisionBar({
   findingKeys,
 }: DecisionBarProps) {
   const router = useRouter();
+  const findingParam = useSearchParams().get("finding");
   const [saving, setSaving] = useState<Saving>(null);
   const [rejecting, setRejecting] = useState(false);
-  const [alert, setAlert] = useState<string | null>(null);
+  const [alert, setAlert] = useState<BarAlert | null>(null);
   const [reasonError, setReasonError] = useState<string | null>(null);
 
   // Keep the selected row in view after ↑ ↓ or a move to the next pending finding.
@@ -56,6 +59,9 @@ export function DecisionBar({
 
   const go = (key: string): void =>
     router.replace(findingHref(key), { scroll: false });
+
+  const raise = (text: string, stale = false): void =>
+    setAlert({ text, raisedFor: findingKey, stale });
 
   const settle = (result: DecideFindingResult): void => {
     if (result.ok) {
@@ -67,11 +73,11 @@ export function DecisionBar({
     }
     if (result.error.code === "finding_not_found") {
       setRejecting(false);
-      setAlert(STALE_FINDING);
+      raise(STALE_FINDING, true);
     } else if (rejecting) {
       setReasonError(REASON_REQUIRED);
     } else {
-      setAlert(NOT_SAVED);
+      raise(NOT_SAVED);
     }
   };
 
@@ -86,7 +92,7 @@ export function DecisionBar({
       settle(await decideFinding({ findingKey, status, reason }));
     } catch {
       if (rejecting) setReasonError(UNREACHABLE);
-      else setAlert(UNREACHABLE);
+      else raise(UNREACHABLE);
     } finally {
       setSaving(null);
     }
@@ -122,9 +128,9 @@ export function DecisionBar({
           <span className="type-label-md">Rejected:</span> {decision.reason}
         </p>
       )}
-      {alert !== null && (
+      {alert !== null && alertShows(alert, { findingKey, findingParam }) && (
         <p role="alert" className="type-caption text-error">
-          {alert}
+          {alert.text}
         </p>
       )}
       <div className="flex flex-wrap items-center gap-3">

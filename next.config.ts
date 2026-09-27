@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Native module: keep it out of the bundle and load it from node_modules.
   serverExternalPackages: ["better-sqlite3"],
+  // Dev logs Server Action arguments by default; a rejection reason is analyst text, never logged.
+  logging: { serverFunctions: false },
   experimental: {
     serverActions: {
       bodySizeLimit: maxUploadMb * BYTES_PER_MB + MULTIPART_OVERHEAD_BYTES,
