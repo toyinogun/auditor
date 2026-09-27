@@ -10,6 +10,17 @@ const DEFAULT_EXPORT_ALLOWED = [
   "*.config.{ts,mts,mjs,js}",
 ];
 
+const ANTHROPIC_SDK = {
+  name: "@anthropic-ai/sdk",
+  message: "Only lib/extract calls Claude (spec 0005).",
+};
+
+const NO_DB = {
+  regex: "(^@/lib/db(/|$)|/db(/|$))",
+  message:
+    "lib/extract and lib/ingest/csv.ts never touch the database (spec 0005).",
+};
+
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -22,6 +33,14 @@ const eslintConfig = defineConfig([
     files: DEFAULT_EXPORT_ALLOWED,
     rules: {
       "import/no-default-export": "off",
+    },
+  },
+  // Only lib/extract talks to Claude (spec 0005, AC-13).
+  {
+    files: ["**/*.{ts,tsx,mts}"],
+    ignores: ["lib/extract/**"],
+    rules: {
+      "no-restricted-imports": ["error", { paths: [ANTHROPIC_SDK] }],
     },
   },
   // lib/checks stays pure (spec 0004, AC-15): shared schemas, zod and its own files only.
@@ -44,6 +63,22 @@ const eslintConfig = defineConfig([
         "error",
         { object: "Date", property: "now", message: "lib/checks is pure." },
         { object: "Math", property: "random", message: "lib/checks is pure." },
+      ],
+    },
+  },
+  // Extraction and CSV parsing never touch the database (spec 0005, AC-13).
+  {
+    files: ["lib/extract/**/*.ts"],
+    rules: {
+      "no-restricted-imports": ["error", { patterns: [NO_DB] }],
+    },
+  },
+  {
+    files: ["lib/ingest/csv.ts", "lib/ingest/csv.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: [ANTHROPIC_SDK], patterns: [NO_DB] },
       ],
     },
   },
