@@ -1,0 +1,1465 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "e633911b-c971-499a-9aea-035eda7fcb5b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "audit_runs": {
+      "name": "audit_runs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_count": {
+          "name": "invoice_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoiced_total_cents": {
+          "name": "invoiced_total_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recoverable_total_cents": {
+          "name": "recoverable_total_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "finding_count": {
+          "name": "finding_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "audit_runs_invoiced_total_check": {
+          "name": "audit_runs_invoiced_total_check",
+          "value": "\"audit_runs\".\"invoiced_total_cents\" >= 0"
+        },
+        "audit_runs_recoverable_total_check": {
+          "name": "audit_runs_recoverable_total_check",
+          "value": "\"audit_runs\".\"recoverable_total_cents\" >= 0"
+        }
+      }
+    },
+    "contract_prices": {
+      "name": "contract_prices",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "contract_id": {
+          "name": "contract_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sku": {
+          "name": "sku",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_price_cents": {
+          "name": "unit_price_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "clause": {
+          "name": "clause",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "contract_prices_contract_sku_unique": {
+          "name": "contract_prices_contract_sku_unique",
+          "columns": [
+            "contract_id",
+            "sku"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "contract_prices_contract_id_contracts_id_fk": {
+          "name": "contract_prices_contract_id_contracts_id_fk",
+          "tableFrom": "contract_prices",
+          "tableTo": "contracts",
+          "columnsFrom": [
+            "contract_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "contract_prices_unit_price_check": {
+          "name": "contract_prices_unit_price_check",
+          "value": "\"contract_prices\".\"unit_price_cents\" >= 0"
+        }
+      }
+    },
+    "contract_surcharges": {
+      "name": "contract_surcharges",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "contract_id": {
+          "name": "contract_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "surcharge_type": {
+          "name": "surcharge_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cap_bps": {
+          "name": "cap_bps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "clause": {
+          "name": "clause",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "contract_surcharges_contract_type_unique": {
+          "name": "contract_surcharges_contract_type_unique",
+          "columns": [
+            "contract_id",
+            "surcharge_type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "contract_surcharges_contract_id_contracts_id_fk": {
+          "name": "contract_surcharges_contract_id_contracts_id_fk",
+          "tableFrom": "contract_surcharges",
+          "tableTo": "contracts",
+          "columnsFrom": [
+            "contract_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "contract_surcharges_cap_check": {
+          "name": "contract_surcharges_cap_check",
+          "value": "\"contract_surcharges\".\"cap_bps\" IS NULL OR \"contract_surcharges\".\"cap_bps\" >= 0"
+        },
+        "contract_surcharges_type_check": {
+          "name": "contract_surcharges_type_check",
+          "value": "\"contract_surcharges\".\"surcharge_type\" IN ('fuel', 'energy', 'other')"
+        }
+      }
+    },
+    "contracts": {
+      "name": "contracts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "supplier_id": {
+          "name": "supplier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contract_number": {
+          "name": "contract_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "freight_terms": {
+          "name": "freight_terms",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "freight_clause": {
+          "name": "freight_clause",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "surcharge_clause": {
+          "name": "surcharge_clause",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "contracts_document_id_unique": {
+          "name": "contracts_document_id_unique",
+          "columns": [
+            "document_id"
+          ],
+          "isUnique": true
+        },
+        "contracts_supplier_start_idx": {
+          "name": "contracts_supplier_start_idx",
+          "columns": [
+            "supplier_id",
+            "start_date"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "contracts_document_id_documents_id_fk": {
+          "name": "contracts_document_id_documents_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "contracts_supplier_id_suppliers_id_fk": {
+          "name": "contracts_supplier_id_suppliers_id_fk",
+          "tableFrom": "contracts",
+          "tableTo": "suppliers",
+          "columnsFrom": [
+            "supplier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "contracts_term_check": {
+          "name": "contracts_term_check",
+          "value": "\"contracts\".\"start_date\" <= \"contracts\".\"end_date\""
+        },
+        "contracts_currency_check": {
+          "name": "contracts_currency_check",
+          "value": "\"contracts\".\"currency\" = 'USD'"
+        },
+        "contracts_freight_terms_check": {
+          "name": "contracts_freight_terms_check",
+          "value": "\"contracts\".\"freight_terms\" IN ('included', 'billable', 'not_stated')"
+        }
+      }
+    },
+    "decisions": {
+      "name": "decisions",
+      "columns": {
+        "finding_key": {
+          "name": "finding_key",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "decided_at": {
+          "name": "decided_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "decisions_status_check": {
+          "name": "decisions_status_check",
+          "value": "\"decisions\".\"status\" IN ('approved', 'rejected')"
+        },
+        "decisions_reason_check": {
+          "name": "decisions_reason_check",
+          "value": "\"decisions\".\"status\" = 'approved' OR (\"decisions\".\"reason\" IS NOT NULL AND length(trim(\"decisions\".\"reason\")) > 0)"
+        },
+        "decisions_amount_check": {
+          "name": "decisions_amount_check",
+          "value": "\"decisions\".\"amount_cents\" >= 0"
+        }
+      }
+    },
+    "documents": {
+      "name": "documents",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "sha256": {
+          "name": "sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "filename": {
+          "name": "filename",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "size_bytes": {
+          "name": "size_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_text_layer": {
+          "name": "has_text_layer",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "documents_sha256_unique": {
+          "name": "documents_sha256_unique",
+          "columns": [
+            "sha256"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "documents_size_bytes_check": {
+          "name": "documents_size_bytes_check",
+          "value": "\"documents\".\"size_bytes\" >= 0"
+        },
+        "documents_source_check": {
+          "name": "documents_source_check",
+          "value": "\"documents\".\"source\" IN ('upload', 'webhook', 'sample')"
+        },
+        "documents_kind_check": {
+          "name": "documents_kind_check",
+          "value": "\"documents\".\"kind\" IS NULL OR \"documents\".\"kind\" IN ('invoice', 'contract', 'purchase_order', 'receipts_csv', 'payments_csv')"
+        },
+        "documents_status_check": {
+          "name": "documents_status_check",
+          "value": "\"documents\".\"status\" IN ('queued', 'extracting', 'done', 'failed')"
+        }
+      }
+    },
+    "findings": {
+      "name": "findings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "run_id": {
+          "name": "run_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "finding_key": {
+          "name": "finding_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "check_id": {
+          "name": "check_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "calculation": {
+          "name": "calculation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "evidence": {
+          "name": "evidence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "findings_finding_key_unique": {
+          "name": "findings_finding_key_unique",
+          "columns": [
+            "finding_key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "findings_run_id_audit_runs_id_fk": {
+          "name": "findings_run_id_audit_runs_id_fk",
+          "tableFrom": "findings",
+          "tableTo": "audit_runs",
+          "columnsFrom": [
+            "run_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "findings_invoice_id_invoices_id_fk": {
+          "name": "findings_invoice_id_invoices_id_fk",
+          "tableFrom": "findings",
+          "tableTo": "invoices",
+          "columnsFrom": [
+            "invoice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "findings_check_id_check": {
+          "name": "findings_check_id_check",
+          "value": "\"findings\".\"check_id\" IN ('contract_price', 'duplicate', 'quantity_received', 'surcharge', 'freight', 'missing_reference')"
+        },
+        "findings_action_check": {
+          "name": "findings_action_check",
+          "value": "\"findings\".\"action\" IN ('recover', 'block_payment', 'review_only')"
+        },
+        "findings_amount_check": {
+          "name": "findings_amount_check",
+          "value": "\"findings\".\"amount_cents\" >= 0"
+        }
+      }
+    },
+    "invoice_charges": {
+      "name": "invoice_charges",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line_no": {
+          "name": "line_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "surcharge_type": {
+          "name": "surcharge_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rate_bps": {
+          "name": "rate_bps",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "invoice_charges_invoice_line_unique": {
+          "name": "invoice_charges_invoice_line_unique",
+          "columns": [
+            "invoice_id",
+            "line_no"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "invoice_charges_invoice_id_invoices_id_fk": {
+          "name": "invoice_charges_invoice_id_invoices_id_fk",
+          "tableFrom": "invoice_charges",
+          "tableTo": "invoices",
+          "columnsFrom": [
+            "invoice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "invoice_charges_kind_check": {
+          "name": "invoice_charges_kind_check",
+          "value": "\"invoice_charges\".\"kind\" IN ('surcharge', 'freight', 'other')"
+        },
+        "invoice_charges_surcharge_type_check": {
+          "name": "invoice_charges_surcharge_type_check",
+          "value": "(\"invoice_charges\".\"kind\" = 'surcharge') = (\"invoice_charges\".\"surcharge_type\" IS NOT NULL)"
+        },
+        "invoice_charges_rate_check": {
+          "name": "invoice_charges_rate_check",
+          "value": "\"invoice_charges\".\"rate_bps\" IS NULL OR \"invoice_charges\".\"rate_bps\" >= 0"
+        },
+        "invoice_charges_amount_check": {
+          "name": "invoice_charges_amount_check",
+          "value": "\"invoice_charges\".\"amount_cents\" >= 0"
+        }
+      }
+    },
+    "invoice_lines": {
+      "name": "invoice_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "invoice_id": {
+          "name": "invoice_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line_no": {
+          "name": "line_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sku": {
+          "name": "sku",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_price_cents": {
+          "name": "unit_price_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "invoice_lines_invoice_line_unique": {
+          "name": "invoice_lines_invoice_line_unique",
+          "columns": [
+            "invoice_id",
+            "line_no"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "invoice_lines_invoice_id_invoices_id_fk": {
+          "name": "invoice_lines_invoice_id_invoices_id_fk",
+          "tableFrom": "invoice_lines",
+          "tableTo": "invoices",
+          "columnsFrom": [
+            "invoice_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "invoice_lines_quantity_check": {
+          "name": "invoice_lines_quantity_check",
+          "value": "\"invoice_lines\".\"quantity\" > 0"
+        },
+        "invoice_lines_unit_price_check": {
+          "name": "invoice_lines_unit_price_check",
+          "value": "\"invoice_lines\".\"unit_price_cents\" >= 0"
+        },
+        "invoice_lines_amount_check": {
+          "name": "invoice_lines_amount_check",
+          "value": "\"invoice_lines\".\"amount_cents\" >= 0"
+        }
+      }
+    },
+    "invoices": {
+      "name": "invoices",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "supplier_id": {
+          "name": "supplier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_number": {
+          "name": "invoice_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_date": {
+          "name": "invoice_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "po_number": {
+          "name": "po_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "subtotal_cents": {
+          "name": "subtotal_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total_cents": {
+          "name": "total_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "invoices_document_id_unique": {
+          "name": "invoices_document_id_unique",
+          "columns": [
+            "document_id"
+          ],
+          "isUnique": true
+        },
+        "invoices_invoice_number_idx": {
+          "name": "invoices_invoice_number_idx",
+          "columns": [
+            "invoice_number"
+          ],
+          "isUnique": false
+        },
+        "invoices_po_number_idx": {
+          "name": "invoices_po_number_idx",
+          "columns": [
+            "po_number"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "invoices_document_id_documents_id_fk": {
+          "name": "invoices_document_id_documents_id_fk",
+          "tableFrom": "invoices",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "invoices_supplier_id_suppliers_id_fk": {
+          "name": "invoices_supplier_id_suppliers_id_fk",
+          "tableFrom": "invoices",
+          "tableTo": "suppliers",
+          "columnsFrom": [
+            "supplier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "invoices_currency_check": {
+          "name": "invoices_currency_check",
+          "value": "\"invoices\".\"currency\" = 'USD'"
+        },
+        "invoices_subtotal_check": {
+          "name": "invoices_subtotal_check",
+          "value": "\"invoices\".\"subtotal_cents\" >= 0"
+        },
+        "invoices_total_check": {
+          "name": "invoices_total_check",
+          "value": "\"invoices\".\"total_cents\" >= 0"
+        }
+      }
+    },
+    "payments": {
+      "name": "payments",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "row_no": {
+          "name": "row_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "supplier_id": {
+          "name": "supplier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_number": {
+          "name": "invoice_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount_cents": {
+          "name": "amount_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "paid_date": {
+          "name": "paid_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "reference": {
+          "name": "reference",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "payments_document_row_unique": {
+          "name": "payments_document_row_unique",
+          "columns": [
+            "document_id",
+            "row_no"
+          ],
+          "isUnique": true
+        },
+        "payments_invoice_number_idx": {
+          "name": "payments_invoice_number_idx",
+          "columns": [
+            "invoice_number"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "payments_document_id_documents_id_fk": {
+          "name": "payments_document_id_documents_id_fk",
+          "tableFrom": "payments",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "payments_supplier_id_suppliers_id_fk": {
+          "name": "payments_supplier_id_suppliers_id_fk",
+          "tableFrom": "payments",
+          "tableTo": "suppliers",
+          "columnsFrom": [
+            "supplier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "payments_amount_check": {
+          "name": "payments_amount_check",
+          "value": "\"payments\".\"amount_cents\" >= 0"
+        }
+      }
+    },
+    "po_lines": {
+      "name": "po_lines",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "po_id": {
+          "name": "po_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "line_no": {
+          "name": "line_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sku": {
+          "name": "sku",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit_price_cents": {
+          "name": "unit_price_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "po_lines_po_line_unique": {
+          "name": "po_lines_po_line_unique",
+          "columns": [
+            "po_id",
+            "line_no"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "po_lines_po_id_purchase_orders_id_fk": {
+          "name": "po_lines_po_id_purchase_orders_id_fk",
+          "tableFrom": "po_lines",
+          "tableTo": "purchase_orders",
+          "columnsFrom": [
+            "po_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "po_lines_quantity_check": {
+          "name": "po_lines_quantity_check",
+          "value": "\"po_lines\".\"quantity\" > 0"
+        },
+        "po_lines_unit_price_check": {
+          "name": "po_lines_unit_price_check",
+          "value": "\"po_lines\".\"unit_price_cents\" IS NULL OR \"po_lines\".\"unit_price_cents\" >= 0"
+        }
+      }
+    },
+    "purchase_orders": {
+      "name": "purchase_orders",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "supplier_id": {
+          "name": "supplier_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "po_number": {
+          "name": "po_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "order_date": {
+          "name": "order_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "purchase_orders_document_id_unique": {
+          "name": "purchase_orders_document_id_unique",
+          "columns": [
+            "document_id"
+          ],
+          "isUnique": true
+        },
+        "purchase_orders_po_number_idx": {
+          "name": "purchase_orders_po_number_idx",
+          "columns": [
+            "po_number"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "purchase_orders_document_id_documents_id_fk": {
+          "name": "purchase_orders_document_id_documents_id_fk",
+          "tableFrom": "purchase_orders",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "purchase_orders_supplier_id_suppliers_id_fk": {
+          "name": "purchase_orders_supplier_id_suppliers_id_fk",
+          "tableFrom": "purchase_orders",
+          "tableTo": "suppliers",
+          "columnsFrom": [
+            "supplier_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "purchase_orders_currency_check": {
+          "name": "purchase_orders_currency_check",
+          "value": "\"purchase_orders\".\"currency\" = 'USD'"
+        }
+      }
+    },
+    "receipts": {
+      "name": "receipts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "row_no": {
+          "name": "row_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "po_number": {
+          "name": "po_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sku": {
+          "name": "sku",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quantity_received": {
+          "name": "quantity_received",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "received_date": {
+          "name": "received_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "receipts_document_row_unique": {
+          "name": "receipts_document_row_unique",
+          "columns": [
+            "document_id",
+            "row_no"
+          ],
+          "isUnique": true
+        },
+        "receipts_po_sku_idx": {
+          "name": "receipts_po_sku_idx",
+          "columns": [
+            "po_number",
+            "sku"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "receipts_document_id_documents_id_fk": {
+          "name": "receipts_document_id_documents_id_fk",
+          "tableFrom": "receipts",
+          "tableTo": "documents",
+          "columnsFrom": [
+            "document_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "receipts_quantity_check": {
+          "name": "receipts_quantity_check",
+          "value": "\"receipts\".\"quantity_received\" > 0"
+        }
+      }
+    },
+    "suppliers": {
+      "name": "suppliers",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "suppliers_key_unique": {
+          "name": "suppliers_key_unique",
+          "columns": [
+            "key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

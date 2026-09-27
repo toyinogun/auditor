@@ -33,6 +33,7 @@ pnpm typecheck    # next typegen + tsc --noEmit
 pnpm lint         # ESLint (lint:fix to autofix)
 pnpm format       # Prettier write (format:check to verify)
 pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
+pnpm exec drizzle-kit generate  # New SQL migration in drizzle/ after editing lib/db/schema.ts (applied at server start)
 ```
 
 ## Specs
@@ -78,5 +79,7 @@ Declined: drizzle-sqlite, better-sqlite3-rebuild, vitest, zod, exceljs
 ## Context files
 
 - [n8n/AGENTS.md](n8n/AGENTS.md): the Google Drive intake workflow that posts to `/api/ingest`
+- [lib/schemas/AGENTS.md](lib/schemas/AGENTS.md): the shared Zod shapes, money in cents, converters and keys
+- [lib/db/AGENTS.md](lib/db/AGENTS.md): SQLite schema, migrations and the storage functions
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
