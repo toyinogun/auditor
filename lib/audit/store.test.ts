@@ -201,20 +201,20 @@ describe("saveDocumentRecords", () => {
     expect(db.select().from(contracts).all()).toHaveLength(1);
   });
 
-  it("turns a broken database constraint into err", () => {
+  it("turns a broken database constraint into a plain err, without schema names", () => {
     const { receipts: rows } = briefSampleRecords(refFor);
     const { documentId } = refFor("receipts.csv");
     const twice = [rows[0], { ...rows[1], rowNo: rows[0].rowNo }];
-    expect(
-      saveDocumentRecords(db, {
-        kind: "receipts_csv",
-        documentId,
-        rows: twice,
-      }),
-    ).toEqual({
-      ok: false,
-      error: expect.stringMatching(/^the database refused a record: UNIQUE/),
+    const saved = saveDocumentRecords(db, {
+      kind: "receipts_csv",
+      documentId,
+      rows: twice,
     });
+    expect(saved).toEqual({
+      ok: false,
+      error: "the database refused a record: it repeats one already stored",
+    });
+    expect(JSON.stringify(saved)).not.toMatch(/UNIQUE|receipts\.|constraint/);
     expect(docOf("receipts.csv")).toMatchObject({ status: "queued" });
   });
 });

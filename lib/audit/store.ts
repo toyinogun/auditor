@@ -176,13 +176,27 @@ const documentIdOf = (records: DocumentRecords): number =>
 const refusal = (reason: string): Error =>
   Object.assign(new Error(reason), { refusal: reason });
 
+const REFUSED = "the database refused a record";
+
+/**
+ * The reason lands in `documents.error` and the webhook's answer, so it names the kind of
+ * constraint, never the driver's message (which carries table and column names).
+ */
+const REFUSED_BY_CODE: Readonly<Record<string, string>> = {
+  SQLITE_CONSTRAINT_UNIQUE: `${REFUSED}: it repeats one already stored`,
+  SQLITE_CONSTRAINT_PRIMARYKEY: `${REFUSED}: it repeats one already stored`,
+  SQLITE_CONSTRAINT_FOREIGNKEY: `${REFUSED}: it points to a record that does not exist`,
+  SQLITE_CONSTRAINT_NOTNULL: `${REFUSED}: a required value is missing`,
+  SQLITE_CONSTRAINT_CHECK: `${REFUSED}: a value is out of range`,
+};
+
 /** better-sqlite3 throws `SqliteError` for a broken constraint; matched by name to keep the driver in lib/db. */
 const refusedReason = (error: unknown): string | null => {
   if (!(error instanceof Error)) return null;
   if ("refusal" in error) return String(error.refusal);
-  return error.name === "SqliteError"
-    ? `the database refused a record: ${error.message}`
-    : null;
+  if (error.name !== "SqliteError") return null;
+  const code = "code" in error ? String(error.code) : "";
+  return REFUSED_BY_CODE[code] ?? REFUSED;
 };
 
 /**
