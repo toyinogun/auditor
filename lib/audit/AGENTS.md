@@ -10,7 +10,7 @@ Loads records, runs the checks and stores the findings (spec 0001 layout). The g
 - `loadSampleData(db, files, clock, manifest)` in `sample.ts` is the same steps for the app bar's Load sample data (spec 0007, AC-12), returning `Result`. Only a failed audit is an error; once the run commits, a failed clear is logged as `uploadsCleared: false`, not returned.
 - `scripts/audit-sample/index.ts` exposes `loadSample` as `pnpm audit:sample` against `$DATA_DIR/auditor.db`.
 - `store.ts`: the storage steps both runs share: `storeManifestDocuments` (manifest order, so document ids match), `trySaveAuditInput` (returns the first refused save as a value) and `saveAuditInput` (throws it). `saveDocumentRecords` stores one ingested document's records and marks it `done` in one transaction; a refused save comes back as `err` with a plain reason, never the driver's message (it lands in `documents.error` and the webhook answer).
-- `headline.ts`: `latestHeadline(db)` and `headlineText`, the `N findings, $X recoverable of $Y invoiced (Z%)` line the upload panel and webhook show (spec 0006).
+- `headline.ts`: `latestHeadline(db)`, the latest run's figures (`Headline`) that `/review`, the upload panel and the webhook answer show (spec 0006, 0007).
 - `live.ts`: `runLiveAudit(db, manifest, deps)`, the live run (spec 0005). Extracts the PDFs 4 at a time, parses both CSVs, and stores only when all read cleanly, in one transaction (`storeLiveSample`). `compare.ts` lists every kind, record, finding and headline mismatch against offline mode.
 - `scripts/audit-live/index.ts` exposes it as `pnpm audit:live` (`--dump` writes each extraction to `$DATA_DIR/live-dump/`).
 

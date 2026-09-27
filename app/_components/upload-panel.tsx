@@ -11,6 +11,7 @@ import {
 import { Chip } from "@/components/chip";
 import { Money } from "@/components/money";
 import { Button } from "@/components/ui/button";
+import type { Headline } from "@/lib/audit/headline";
 import { cn } from "@/lib/utils";
 import {
   chipFor,
@@ -30,17 +31,9 @@ import {
 const MAX_PARALLEL_UPLOADS = 3;
 const BYTES_PER_MB = 1_048_576;
 
-/** The latest run's figures (`latestHeadline`), or null before the first run. */
-export type PanelHeadline = {
-  readonly findingCount: number;
-  readonly recoverableCents: number;
-  readonly invoicedTotalCents: number;
-  readonly recoverableShare: string;
-};
-
 type UploadPanelProps = {
   readonly documents: readonly StoredDocumentRow[];
-  readonly headline: PanelHeadline | null;
+  readonly headline: Headline | null;
   readonly maxUploadMb: number;
 };
 
@@ -284,11 +277,7 @@ function FileRow({ row, onRetry }: FileRowProps) {
 }
 
 /** "8 findings, $9,766.85 recoverable of $53,939.60 invoiced (18.1%)", amounts in `Money`. */
-function HeadlineLine({
-  headline,
-}: {
-  readonly headline: PanelHeadline | null;
-}) {
+function HeadlineLine({ headline }: { readonly headline: Headline | null }) {
   if (headline === null) return <>No audit yet</>;
   const findings = headline.findingCount === 1 ? "finding" : "findings";
   return (
