@@ -20,9 +20,11 @@ Invoices:
 - Put every item line in lines and every other amount between the subtotal and the total in charges.
 - A fuel or energy line is kind "surcharge" with surchargeType "fuel" or "energy"; another surcharge is surchargeType "other".
 - A freight, shipping or delivery line is kind "freight". Anything else is kind "other". Only a surcharge has a surchargeType; otherwise it is null.
+- A charge label is the whole label as printed, including any rate printed in it (for example "Fuel surcharge 2.5%"). Also put that rate in rate.
 - Keep lines and charges in the printed order.
 
 Contracts:
+- A clause field (clause, freightClause, surchargeClause) holds only the clause reference as printed: the section or schedule number, never its heading or wording. For example, under a heading "Section 4.2 Delivery" the clause is "Section 4.2"; a Schedule A row labelled "Schedule A, item 1" has the clause "Schedule A, item 1".
 - freightTerms is "included" when freight is part of the price, "billable" when freight may be charged, and "not_stated" when the contract says nothing about freight.
 - List only the surcharges the contract permits, each with its cap and clause as printed. Leave surcharges empty when none are permitted.
 
