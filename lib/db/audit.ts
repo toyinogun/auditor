@@ -5,12 +5,13 @@ import {
   DecisionInput,
   EvidenceItem,
   Finding,
+  type DecideError,
   type Decision,
   type DecisionState,
 } from "@/lib/schemas/finding";
 import { err, ok, type Result } from "@/lib/schemas/result";
 import type { Db } from "./client";
-import { auditRuns, decisions, findings, invoices } from "./schema";
+import { auditRuns, decisions, findings, invoices, suppliers } from "./schema";
 
 export type AuditRunTimes = {
   readonly startedAt: number;
@@ -81,6 +82,8 @@ export const saveAuditRun = (
 export type FindingView = Finding & {
   readonly id: number;
   readonly runId: number;
+  readonly supplierName: string;
+  readonly invoiceNumber: string;
   readonly decision: DecisionState;
 };
 
@@ -106,26 +109,39 @@ export const listFindings = (db: Db): readonly FindingView[] =>
     .select({
       finding: findings,
       invoiceDocumentId: invoices.documentId,
+      invoiceNumber: invoices.invoiceNumber,
+      supplierName: suppliers.name,
       decision: decisions,
     })
     .from(findings)
     .innerJoin(invoices, eq(findings.invoiceId, invoices.id))
+    .innerJoin(suppliers, eq(invoices.supplierId, suppliers.id))
     .leftJoin(decisions, eq(findings.findingKey, decisions.findingKey))
     .orderBy(desc(findings.amountCents), asc(findings.id))
     .all()
-    .map(({ finding, invoiceDocumentId, decision }) => ({
-      id: finding.id,
-      runId: finding.runId,
-      findingKey: finding.findingKey,
-      checkId: finding.checkId,
-      action: finding.action,
-      invoiceDocumentId,
-      amountCents: finding.amountCents,
-      title: finding.title,
-      calculation: finding.calculation,
-      evidence: Evidence.parse(JSON.parse(finding.evidence)),
-      decision: decisionState(finding.amountCents, decision),
-    }));
+    .map(
+      ({
+        finding,
+        invoiceDocumentId,
+        invoiceNumber,
+        supplierName,
+        decision,
+      }) => ({
+        id: finding.id,
+        runId: finding.runId,
+        supplierName,
+        invoiceNumber,
+        findingKey: finding.findingKey,
+        checkId: finding.checkId,
+        action: finding.action,
+        invoiceDocumentId,
+        amountCents: finding.amountCents,
+        title: finding.title,
+        calculation: finding.calculation,
+        evidence: Evidence.parse(JSON.parse(finding.evidence)),
+        decision: decisionState(finding.amountCents, decision),
+      }),
+    );
 
 const describeIssues = (error: z.ZodError): string =>
   error.issues
@@ -134,22 +150,33 @@ const describeIssues = (error: z.ZodError): string =>
 
 /**
  * Stores an analyst's Approve or Reject by finding key, snapshotting the finding's amount.
- * Deciding again replaces the earlier decision. A reject needs a non blank reason.
+ * Deciding again replaces the earlier decision. A reject needs a non blank reason. A stale key
+ * comes back as `finding_not_found`, so callers can tell it from a bad input (spec 0008, AC-12).
  */
 export const decide = (
   db: Db,
   input: unknown,
   now: number = Date.now(),
-): Result<Decision> => {
+): Result<Decision, DecideError> => {
   const parsed = DecisionInput.safeParse(input);
-  if (!parsed.success) return err(describeIssues(parsed.error));
+  if (!parsed.success) {
+    return err({
+      code: "invalid_input",
+      message: describeIssues(parsed.error),
+    });
+  }
   const { findingKey, status } = parsed.data;
   const finding = db
     .select({ amountCents: findings.amountCents })
     .from(findings)
     .where(eq(findings.findingKey, findingKey))
     .get();
-  if (!finding) return err(`finding ${findingKey} does not exist`);
+  if (!finding) {
+    return err({
+      code: "finding_not_found",
+      message: `finding ${findingKey} does not exist`,
+    });
+  }
 
   const reason = parsed.data.reason?.trim() || null;
   const decision = {

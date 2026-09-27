@@ -2,7 +2,12 @@ import type { Finding } from "@/lib/schemas/finding";
 import type { InvoiceRecord } from "@/lib/schemas/records";
 import { reviewFinding } from "./action";
 import type { AuditContext } from "./context";
-import { evidenceItem, INVOICE_LABEL, lineLocator } from "./evidence";
+import {
+  evidenceItem,
+  INVOICE_LABEL,
+  lineLocator,
+  EVIDENCE_LABEL,
+} from "./evidence";
 
 /** $0 review findings for a missing PO, contract or contract price (spec 0004, AC-9). */
 
@@ -19,7 +24,7 @@ const poFindings = (
       title: poNumber === null ? "No PO" : `PO ${poNumber} not found`,
       evidence: [
         evidenceItem(
-          "PO number",
+          EVIDENCE_LABEL.poNumber,
           poNumber ?? "none",
           invoice,
           INVOICE_LABEL.po,
@@ -42,7 +47,7 @@ const contractFindings = (
         title: `No contract in force on ${invoice.invoiceDate}`,
         evidence: [
           evidenceItem(
-            "Invoice date",
+            EVIDENCE_LABEL.invoiceDate,
             invoice.invoiceDate,
             invoice,
             INVOICE_LABEL.date,
@@ -60,7 +65,12 @@ const contractFindings = (
         detail: sku,
         title: `No contract price for ${sku}`,
         evidence: lines.map((line) =>
-          evidenceItem("Billed SKU", sku, invoice, lineLocator(line.lineNo)),
+          evidenceItem(
+            EVIDENCE_LABEL.billedSku,
+            sku,
+            invoice,
+            lineLocator(line.lineNo),
+          ),
         ),
       }),
     );

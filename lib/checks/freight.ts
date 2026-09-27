@@ -3,7 +3,13 @@ import { formatCents } from "@/lib/schemas/money";
 import type { InvoiceRecord } from "@/lib/schemas/records";
 import { moneyFinding } from "./action";
 import type { AuditContext } from "./context";
-import { amountsTerm, chargeLocator, evidenceItem, sumCents } from "./evidence";
+import {
+  amountsTerm,
+  chargeLocator,
+  evidenceItem,
+  sumCents,
+  EVIDENCE_LABEL,
+} from "./evidence";
 
 /** Freight billed when the contract includes it (spec 0004, AC-12). */
 
@@ -29,14 +35,14 @@ const invoiceFindings = (
       evidence: [
         ...charges.map((charge) =>
           evidenceItem(
-            "Freight billed",
+            EVIDENCE_LABEL.freightBilled,
             formatCents(charge.amountCents),
             invoice,
             chargeLocator(charge.lineNo),
           ),
         ),
         evidenceItem(
-          "Freight terms",
+          EVIDENCE_LABEL.freightTerms,
           "included",
           contract,
           contract.freightClause ?? FREIGHT_TERMS_LOCATOR,

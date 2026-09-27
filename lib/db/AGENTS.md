@@ -8,7 +8,7 @@ The only code that touches SQLite (better-sqlite3 + Drizzle). Governing spec: [0
 - `client.ts`: `openDb(file)` opens SQLite with WAL and foreign keys on, then applies the migrations in `drizzle/`. `getDb()` is the app's single connection at `$DATA_DIR/auditor.db`; `instrumentation.ts` opens it at server start.
 - `documents.ts`: `insertDocument` (dedupes by `sha256`), `setDocumentStatus`, `claimDocument` (one conditional `UPDATE`, so only one caller can move a document to `extracting`), `getDocument`, `listDocuments` (newest first, capped at `DOCUMENT_LIST_LIMIT`) and `failInterrupted` (at server start, `queued`/`extracting` become `failed`, spec 0006 AC-11).
 - `records.ts`: `save<Type>` per record type (`saveContract` refuses an overlapping term for the same supplier), `loadAuditInput`.
-- `audit.ts`: `saveAuditRun` (replaces all findings in one transaction; `recoverable_total_cents` sums only `recover` findings, spec 0004 AC-6), `listFindings`, `decide`, `latestAuditRun`, `countDecisions` (the reload guard's count, spec 0007 AC-13).
+- `audit.ts`: `saveAuditRun` (replaces all findings in one transaction; `recoverable_total_cents` sums only `recover` findings, spec 0004 AC-6), `listFindings` (with each finding's supplier name and invoice number), `decide` (typed `DecideError`: `invalid_input` or `finding_not_found`), `latestAuditRun`, `countDecisions` (the reload guard's count, spec 0007 AC-13).
 - `admin.ts`: `resetAll`.
 - `testing.ts`: test support (`seedBriefSample`, `TEST_NOW`). Never import it from app code.
 
