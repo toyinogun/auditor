@@ -86,6 +86,7 @@ Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-serve
 ## Context files
 
 - [n8n/AGENTS.md](n8n/AGENTS.md): the Google Drive intake workflow that posts to `/api/ingest`
+- [app/AGENTS.md](app/AGENTS.md): pages, the `(app)` shell, Server Actions, the webhook route and the token mapping layer
 - [components/AGENTS.md](components/AGENTS.md): the shared UI (restyled shadcn primitives, `Money`, `SummaryTile`, `Chip`, `AppBar`) and the design token rules
 - [lib/schemas/AGENTS.md](lib/schemas/AGENTS.md): the shared Zod shapes, money in cents, converters and keys
 - [lib/db/AGENTS.md](lib/db/AGENTS.md): SQLite schema, migrations and the storage functions
