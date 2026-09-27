@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseCsv, toCsv, toCsvRows } from "./csv";
+import { parseCsv } from "../../lib/ingest/csv";
+import { toCsv, toCsvRows } from "./csv";
 
 describe("toCsv", () => {
   it("writes LF lines with a trailing newline and no quoting for plain cells", () => {
