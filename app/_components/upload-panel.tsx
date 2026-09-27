@@ -7,6 +7,12 @@ import {
   uploadFile,
   type IngestActionResult,
 } from "@/app/actions";
+import {
+  mergeRows,
+  type Row,
+  type RowStatus,
+  type StoredDocumentRow,
+} from "./upload-rows";
 
 /**
  * The temporary upload panel (spec 0006, AC-13): a drop zone that is also a button, one Server
@@ -16,33 +22,6 @@ import {
 
 const MAX_PARALLEL_UPLOADS = 3;
 const BYTES_PER_MB = 1_048_576;
-
-type RowStatus =
-  | "uploading"
-  | "done"
-  | "already ingested"
-  | "in progress"
-  | "failed"
-  | "refused";
-
-type Row = {
-  readonly key: string;
-  readonly documentId: number | null;
-  readonly filename: string;
-  readonly kind: string | null;
-  readonly status: RowStatus;
-  readonly reason: string | null;
-  /** Waiting on an action; wins over the server's row until it answers. */
-  readonly inFlight: boolean;
-};
-
-export type StoredDocumentRow = {
-  readonly id: number;
-  readonly filename: string;
-  readonly kind: string | null;
-  readonly status: "queued" | "extracting" | "done" | "failed";
-  readonly error: string | null;
-};
 
 type UploadPanelProps = {
   readonly documents: readonly StoredDocumentRow[];
@@ -67,21 +46,6 @@ const STATUS_STYLE: Readonly<Record<RowStatus, string>> = {
   refused: "bg-red-100 text-red-800",
 };
 
-const storedRow = (doc: StoredDocumentRow): Row => ({
-  key: `doc-${doc.id}`,
-  documentId: doc.id,
-  filename: doc.filename,
-  kind: doc.kind,
-  status:
-    doc.status === "done"
-      ? "done"
-      : doc.status === "failed"
-        ? "failed"
-        : "in progress",
-  reason: doc.error,
-  inFlight: false,
-});
-
 /** The row a file shows once its action answers. */
 const answeredRow = (row: Row, result: IngestActionResult): Row => {
   if (result.ok) {
@@ -103,35 +67,6 @@ const answeredRow = (row: Row, result: IngestActionResult): Row => {
         ? "in progress"
         : "refused";
   return { ...row, documentId, status, reason: message, inFlight: false };
-};
-
-/**
- * Local rows first (files in flight or refused), then the server's list, newest first. A server
- * row replaces the local one with the same document id, keeping the "already ingested" label,
- * except while a retry of it is in flight.
- */
-const mergeRows = (
-  local: readonly Row[],
-  stored: readonly StoredDocumentRow[],
-): readonly Row[] => {
-  const storedIds = new Set(stored.map((doc) => doc.id));
-  const localById = new Map(
-    local.flatMap((row) =>
-      row.documentId === null ? [] : [[row.documentId, row] as const],
-    ),
-  );
-  const pending = local.filter(
-    (row) => row.documentId === null || !storedIds.has(row.documentId),
-  );
-  const fromServer = stored.map((doc) => {
-    const server = storedRow(doc);
-    const mine = localById.get(doc.id);
-    if (mine?.inFlight) return mine;
-    return mine?.status === "already ingested" && server.status === "done"
-      ? { ...server, status: mine.status }
-      : server;
-  });
-  return [...pending, ...fromServer];
 };
 
 /** Runs `task` over `items`, at most `limit` at once. */
