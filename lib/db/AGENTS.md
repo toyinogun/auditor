@@ -14,7 +14,7 @@ The only code that touches SQLite (better-sqlite3 + Drizzle). Governing spec: [0
 
 ## Conventions
 
-- Every module here except `schema.ts` starts with `import "server-only"` (`drizzle-kit` reads `schema.ts` outside Next). `vitest.config.ts` maps `server-only` to its empty module for tests.
+- Every module here except `schema.ts` starts with `import "server-only"` (`drizzle-kit` reads `schema.ts` outside Next). `vitest.config.mts` maps `server-only` to its empty module for tests.
 - After editing `schema.ts`, run `pnpm exec drizzle-kit generate` and commit the new SQL in `drizzle/`. Never edit a committed migration.
 - Functions take `db` first. Functions that write a timestamp take `now` (epoch ms, default `Date.now()`) last; `saveAuditRun` takes its start and finish times instead. Tests pass `TEST_NOW` and an `openDb(":memory:")` database.
 - Expected failures return `Result`; a finding that names a missing invoice is a bug in the checks and throws, rolling the whole run back.

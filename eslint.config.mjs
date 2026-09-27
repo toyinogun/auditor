@@ -7,7 +7,7 @@ import prettier from "eslint-config-prettier/flat";
 const DEFAULT_EXPORT_ALLOWED = [
   "app/**/{page,layout,template,loading,error,global-error,not-found,default,route}.{ts,tsx}",
   "app/**/{opengraph-image,twitter-image,icon,apple-icon,sitemap,robots,manifest}.{ts,tsx}",
-  "*.config.{ts,mjs,js}",
+  "*.config.{ts,mts,mjs,js}",
 ];
 
 const eslintConfig = defineConfig([
@@ -35,6 +35,9 @@ const eslintConfig = defineConfig([
     "drizzle/**",
     ".agents/**",
     ".claude/**",
+    "public/sample/**",
+    "public/.sample.tmp/**",
+    "public/.sample.tmp.old/**",
   ]),
 ]);
 
