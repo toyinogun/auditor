@@ -20,7 +20,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 |---|---------|-------|--------|
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
-| 3 | Data model | Foundation | in-progress |
+| 3 | Data model | Foundation | done |
 | 4 | Sample data generator | Release 1 | planned |
 | 5 | Six audit checks | Release 1 | planned |
 | 6 | Offline audit run | Release 1 | planned |
@@ -49,7 +49,7 @@ Capture conventions from the real scaffolded project, then install lint, format,
 **Done when:** root `AGENTS.md` reflects the real stack, and lint, format, typecheck and the test runner all run clean.
 - [x] Capture conventions + tooling choices: `/audit`
 
-### 3. Data model · in-progress
+### 3. Data model · done
 The shared shapes every feature leans on: documents, extracted invoices, contracts and purchase orders with their lines, receipts, payments, findings with evidence, and analyst decisions. These shapes are the contract between the generator, the LLM extraction and the checks, so they come first.
 **Done when:** one set of validated shapes covers every field the six checks and the evidence line need, money is stored without rounding drift, and the sample data fits them with no special cases.
 spec [0002](../specs/0002-data-model/index.md) · code in `lib/schemas/`, `lib/db/`, `drizzle/`
@@ -59,7 +59,7 @@ spec [0002](../specs/0002-data-model/index.md) · code in `lib/schemas/`, `lib/d
   - [x] Keys and finding shapes: supplier and invoice number keys, finding key, evidence, decision (AC-9, AC-13)
   - [x] Database schema, first migration and client with WAL and foreign keys (AC-7)
   - [x] Record, audit run and decision storage with reset (AC-8 to AC-15)
-- [ ] Verify it: `/check verify data model`
+- [x] Verify it: `/check verify data model`
 
 ## Release 1: Offline audit engine (the skateboard)
 
