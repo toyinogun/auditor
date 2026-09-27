@@ -1,7 +1,7 @@
 # 0002. Data model for documents, records, findings and decisions
 
 **Date**: 2026-09-27
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

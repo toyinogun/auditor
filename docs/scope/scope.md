@@ -55,8 +55,8 @@ The shared shapes every feature leans on: documents, extracted invoices, contrac
 spec [0002](../specs/0002-data-model/index.md)
 - [x] Design it (spec): `/architect data model`
 - [ ] Build it: `/develop data model`
-  - [ ] Money helpers, document shapes and converters with the arithmetic guard (AC-1 to AC-6)
-  - [ ] Keys and finding shapes: supplier and invoice number keys, finding key, evidence, decision (AC-9, AC-13)
+  - [x] Money helpers, document shapes and converters with the arithmetic guard (AC-1 to AC-6)
+  - [x] Keys and finding shapes: supplier and invoice number keys, finding key, evidence, decision (AC-9, AC-13)
   - [ ] Database schema, first migration and client with WAL and foreign keys (AC-7)
   - [ ] Record, audit run and decision storage with reset (AC-8 to AC-15)
 - [ ] Verify it: `/check verify data model`
