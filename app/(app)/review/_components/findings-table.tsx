@@ -66,7 +66,10 @@ export function FindingsTable({
                     {finding.invoiceNumber}
                   </Link>
                 </TableCell>
-                <TableCell className="py-2">{finding.title}</TableCell>
+                {/* One line keeps rows at 36px (AC-2); the detail heading shows the full title. */}
+                <TableCell className="w-full max-w-0">
+                  <span className="block truncate">{finding.title}</span>
+                </TableCell>
                 <TableCell>
                   <Chip state={finding.decision.status} />
                 </TableCell>

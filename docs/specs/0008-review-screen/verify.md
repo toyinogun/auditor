@@ -23,6 +23,7 @@ _Steps derived from spec 0008 acceptance criteria and its Value sourcing table. 
 - [ ] Open the page in two tabs; in tab 2 remove the finding (upload a changed invoice, or reset with a different data set); approve it in tab 1 → Rust alert "This finding changed since the page loaded. The list has been refreshed.", nothing saved, the list refreshes → AC-12
 - [ ] A run with 0 findings (upload only a clean invoice such as NL-88121 with its contract and PO) → tiles `$0.00`, `$0.00`, `0 of 0`, `0.0%` and the "No overpayments found / Checked N invoices." panel, no split pane, no keyboard hint → AC-13
 - [ ] At 390px with no param → only the table; tap a row → only the detail with an "All findings" back link at top, decision bar at the end in normal flow → AC-14
+- [ ] At 390px open the NL-88310 bearing finding (a marked figure in the paper) → the page has no sideways scroll (`scrollWidth` equals the window width); only the paper table scrolls inside its box → AC-14
 
 ## Commands
 - [ ] `pnpm test` → all pass, including `lib/checks/invoice-view.test.ts`, `lib/audit/review.test.ts`, `app/actions.test.ts`, `review-keys.test.ts`, `decision.test.ts` → AC-1 to AC-12, AC-15, AC-16

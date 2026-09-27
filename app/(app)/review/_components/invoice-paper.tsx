@@ -215,7 +215,8 @@ export function InvoicePaper({ view, highlights }: InvoicePaperProps) {
         className="flex flex-col gap-8 bg-surface p-4 text-on-surface sm:p-8"
       >
         <HeaderFacts view={view} header={highlights.header} />
-        <div className="overflow-x-auto">
+        {/* `relative` keeps the absolutely placed sr-only labels inside the scroll box. */}
+        <div className="relative overflow-x-auto">
           <table className="w-full min-w-xl border-collapse">
             <caption className="sr-only">
               Invoice lines and charges, with the quantity received and the
