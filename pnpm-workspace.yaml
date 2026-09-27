@@ -1,3 +1,7 @@
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
+
+# Run every pnpm command in this project on Node 22 (matches .nvmrc, engines and the Docker image),
+# whatever Node the shell has. pnpm downloads it on first use.
+useNodeVersion: 22.23.3

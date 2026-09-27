@@ -1,0 +1,13 @@
+.next/
+out/
+build/
+coverage/
+data/
+drizzle/
+pnpm-lock.yaml
+next-env.d.ts
+skills-lock.json
+.agents/
+.claude/
+# Markdown is curated by hand and by the workflow skills; don't reflow it.
+*.md

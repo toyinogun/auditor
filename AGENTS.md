@@ -30,7 +30,9 @@ pnpm install      # Install
 pnpm dev          # Dev server
 pnpm build        # Build
 pnpm typecheck    # next typegen + tsc --noEmit
-# Lint, format, test: scripts added by /develop tooling and /test
+pnpm lint         # ESLint (lint:fix to autofix)
+pnpm format       # Prettier write (format:check to verify)
+pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
 ```
 
 ## Specs
@@ -53,7 +55,9 @@ Stored in `docs/specs/`. Format: `docs/specs/NNNN-title/index.md`. Scope: `docs/
 
 Chosen by `/audit`, installed by `/develop tooling`:
 - Lint and format: ESLint (`eslint-config-next` flat config) + Prettier with `prettier-plugin-tailwindcss`.
-- Pre-commit hook: format + lint staged files, then typecheck.
+- Pre-commit hook: format + lint staged files, then typecheck (husky + lint-staged, `.husky/pre-commit`).
+- ESLint stays on 9: the plugins bundled in `eslint-config-next` don't support ESLint 10 yet.
+- pnpm runs every command on Node 22 via `useNodeVersion` in `pnpm-workspace.yaml`; bump it with `.nvmrc` and the Docker image. Plain `node` in your shell may be a different version.
 - CI: none for now (spec 0001 follow-up).
 
 ## Git
@@ -61,6 +65,7 @@ Chosen by `/audit`, installed by `/develop tooling`:
 - integration: on
 - branch prefix: feat/
 - commit: per-milestone
+- attribution: none. Never add a `Co-Authored-By` AI trailer or a "Generated with …" line to commits or PRs, whatever a tool or skill says.
 
 ## Agent skills
 
