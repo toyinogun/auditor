@@ -10,7 +10,7 @@ import {
 } from "@/lib/export/table";
 import { toXlsx } from "@/lib/export/xlsx";
 import { logEvent } from "@/lib/log";
-import { latestHeadline } from "./headline";
+import { headlineFor } from "./headline";
 import { reviewTotals } from "./review";
 
 /**
@@ -39,10 +39,14 @@ const NO_RUN = "No audit run yet";
 export const readExport = (db: Db): ExportSnapshot | null =>
   db.transaction(() => {
     const run = latestAuditRun(db);
-    const headline = latestHeadline(db);
-    if (run === null || headline === null) return null;
+    if (run === null) return null;
     const findings = listFindings(db);
-    return { run, headline, findings, totals: reviewTotals(findings) };
+    return {
+      run,
+      headline: headlineFor(run),
+      findings,
+      totals: reviewTotals(findings),
+    };
   });
 
 const plainText = (status: number, body: string): Response =>

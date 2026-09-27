@@ -6,7 +6,7 @@ import { cellText, type Cell, type ExportRow, type ExportTable } from "./table";
  * supplier name, filename or reason comes from outside the app. Money is generated, so unguarded.
  */
 
-const BOM = "﻿";
+const BOM = "\uFEFF";
 const CRLF = "\r\n";
 const FORMULA_START = /^[=+\-@\t\r]/;
 const NEEDS_QUOTES = /[",\r\n]/;
