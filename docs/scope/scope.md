@@ -27,7 +27,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 7 | LLM classify & extract | Release 2 | done |
 | 8 | Upload & ingest | Release 2 | done |
 | 9 | Design system & UI foundation | Release 3 | done |
-| 10 | Review screen | Release 3 | planned |
+| 10 | Review screen | Release 3 | in-progress |
 | 11 | Export | Release 3 | planned |
 | 12 | n8n Drive intake | Release 4 | planned |
 | 13 | Landing page & social card | Release 4 | planned |
@@ -142,11 +142,17 @@ spec [0007](../specs/0007-design-system-ui-foundation/index.md) · code in `app/
   - [x] `/documents` move and restyle, source guards, full green pass (AC-14, AC-15, AC-18)
 - [x] Verify it: `/check verify design system & UI foundation`
 
-### 10. Review screen · needs a decision
+### 10. Review screen · in-progress
 Summary tiles (recoverable, approved, pending, % of invoiced), findings sorted by amount, and a detail panel showing the invoice with flagged lines highlighted beside contract price and quantity received. Approve or Reject, with a reason required to reject. Holds the "Load sample data" button.
 **Done when:** on the sample data the tiles show $9,766.85 recoverable and 18.1% of invoiced, findings list largest first, each detail shows its evidence, rejecting without a reason is blocked, and decisions survive a reload.
-wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (options 1a split pane, 1b ledger, 1c queue; 1f reject dialog)
-- [ ] Design it (spec): `/architect review screen`
+spec [0008](../specs/0008-review-screen/index.md) · code in `app/(app)/review/`, `app/actions.ts`, `lib/checks/invoice-view.ts`, `lib/audit/review.ts`, `lib/db/audit.ts` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1a split pane chosen; 1f reject dialog)
+- [x] Design it (spec): `/architect review screen`
+- [ ] Build it: `/develop review screen`
+  - [ ] Storage and pure view logic: `listFindings` fields, typed `decide` errors, reason cap, `EVIDENCE_LABEL`, `describeInvoiceLines`, `highlightsFor`, `reviewTotals`, `nextPendingKey` (AC-1, AC-2, AC-4 to AC-6, AC-8, AC-9, AC-12, AC-16)
+  - [ ] Thin whole: `decideFinding`, four tiles, findings table, URL selection, invoice paper with highlights, evidence line, decision bar and reject dialog (AC-1 to AC-10, AC-16, AC-17)
+  - [ ] Edges, narrow screens and keyboard: unknown key caption, stale key alert, zero findings panel, stacked layout, ↑ ↓ A R (AC-3, AC-11 to AC-14)
+  - [ ] Logging and full green pass: `finding_decided` event, typecheck, lint, test, build, design lint (AC-15, AC-17)
+- [ ] Verify it: `/check verify review screen`
 
 ### 11. Export
 The finding log as `.xlsx` and `.csv`, including the analyst's decisions and a total row.
@@ -189,6 +195,8 @@ Out of scope for this build, kept so the plan stays honest.
 - **CI on push**: GitHub Actions for typecheck, test and build, skipped for now (from spec 0001)
 - **Error monitoring**: report crashes on the public demo · needs a decision
 - **Visitor analytics**: count visits and sample loads · needs a decision
+- **Per visitor demo decisions**: isolate each visitor's approvals on the public demo instead of one shared audit (or a nightly reset) · from spec 0008
+- **Large runs on the review screen**: cap or paginate the findings table and load one invoice with a targeted query once a run holds hundreds of findings · from spec 0008
 
 ## Legend
 
