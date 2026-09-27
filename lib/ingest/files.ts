@@ -69,46 +69,47 @@ const listFiles = async (dir: string): Promise<readonly string[]> => {
   }
 };
 
-export const createUploadStore = (dir: string): UploadStore => ({
-  dir,
-  write: async (sha256, extension, bytes) => {
-    const target = path.join(dir, fileName(sha256, extension));
-    if (await exists(target)) return;
-    await mkdir(dir, { recursive: true });
-    const temp = `${target}${TEMP_MARKER}${randomUUID()}`;
-    try {
-      await writeFile(temp, bytes);
-      await rename(temp, target);
-    } catch (error) {
-      await rm(temp, { force: true });
-      throw error;
-    }
-  },
-  read: async (sha256, extension) => {
-    try {
-      return new Uint8Array(
-        await readFile(path.join(dir, fileName(sha256, extension))),
+export const createUploadStore = (dir: string): UploadStore => {
+  // The folder is only known at run time, so keep the bundler from tracing the whole project.
+  const inDir = (name: string): string =>
+    path.join(/* turbopackIgnore: true */ dir, name);
+  return {
+    dir,
+    write: async (sha256, extension, bytes) => {
+      const target = inDir(fileName(sha256, extension));
+      if (await exists(target)) return;
+      await mkdir(dir, { recursive: true });
+      const temp = `${target}${TEMP_MARKER}${randomUUID()}`;
+      try {
+        await writeFile(temp, bytes);
+        await rename(temp, target);
+      } catch (error) {
+        await rm(temp, { force: true });
+        throw error;
+      }
+    },
+    read: async (sha256, extension) => {
+      try {
+        return new Uint8Array(
+          await readFile(inDir(fileName(sha256, extension))),
+        );
+      } catch (error) {
+        if (isMissing(error)) return null;
+        throw error;
+      }
+    },
+    clear: async () => {
+      const names = await listFiles(dir);
+      await Promise.all(
+        names.map((name) => rm(inDir(name), { force: true, recursive: true })),
       );
-    } catch (error) {
-      if (isMissing(error)) return null;
-      throw error;
-    }
-  },
-  clear: async () => {
-    const names = await listFiles(dir);
-    await Promise.all(
-      names.map((name) =>
-        rm(path.join(dir, name), { force: true, recursive: true }),
-      ),
-    );
-  },
-  sweepTemp: async () => {
-    const temps = (await listFiles(dir)).filter((name) =>
-      name.includes(TEMP_MARKER),
-    );
-    await Promise.all(
-      temps.map((name) => rm(path.join(dir, name), { force: true })),
-    );
-    return temps.length;
-  },
-});
+    },
+    sweepTemp: async () => {
+      const temps = (await listFiles(dir)).filter((name) =>
+        name.includes(TEMP_MARKER),
+      );
+      await Promise.all(temps.map((name) => rm(inDir(name), { force: true })));
+      return temps.length;
+    },
+  };
+};

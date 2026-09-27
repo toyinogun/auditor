@@ -84,7 +84,11 @@ const eslintConfig = defineConfig([
   // Only files.ts touches the uploads folder (spec 0006, AC-17); tests use temp folders.
   {
     files: ["lib/ingest/**/*.ts"],
-    ignores: ["lib/ingest/files.ts", "lib/ingest/**/*.test.ts"],
+    ignores: [
+      "lib/ingest/files.ts",
+      "lib/ingest/testing.ts",
+      "lib/ingest/**/*.test.ts",
+    ],
     rules: {
       "no-restricted-imports": [
         "error",
