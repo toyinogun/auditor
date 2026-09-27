@@ -48,9 +48,33 @@ const paymentRowsText = (payments: readonly PaymentRecord[]): string =>
   [...Map.groupBy(payments, (p) => p.filename)]
     .map(
       ([filename, rows]) =>
-        `${filename} rows ${rows.map((p) => p.rowNo).join(", ")}`,
+        `${filename} ${rows.length === 1 ? "row" : "rows"} ${rows.map((p) => p.rowNo).join(", ")}`,
     )
     .join("; ");
+
+const timesText = (count: number): string =>
+  count === 1 ? "once" : count === 2 ? "twice" : `${count} times`;
+
+/** The payments go to the group in AC-4 order: the original first, then each earlier copy. */
+const coveredText = (count: number): string =>
+  count === 1
+    ? "only the original"
+    : `only the original and ${count - 1} earlier ${count === 2 ? "copy" : "copies"}`;
+
+const blockedCalculation = (
+  total: string,
+  payments: readonly PaymentRecord[],
+): string =>
+  payments.length === 0
+    ? `Invoice total ${total}, not yet paid = ${total} to block`
+    : `Invoice total ${total}, paid ${timesText(payments.length)} (${paymentRowsText(payments)}), which covers ${coveredText(payments.length)} = ${total} to block`;
+
+const blockedTitle = (count: number): string =>
+  count === 0
+    ? "unpaid"
+    : count === 1
+      ? "only the original paid"
+      : "only earlier invoices paid";
 
 const copyFinding = (
   original: InvoiceRecord,
@@ -59,16 +83,16 @@ const copyFinding = (
   payments: readonly PaymentRecord[],
 ): Finding => {
   const total = formatCents(copy.totalCents);
-  const paidTwice = payments.length >= position + 1;
+  const paidForCopy = payments.length >= position + 1;
   const matchedOnNumber = sameNumber(original, copy);
   return buildFinding(copy, {
     check: "duplicate",
-    action: paidTwice ? "recover" : "block_payment",
+    action: paidForCopy ? "recover" : "block_payment",
     amountCents: copy.totalCents,
-    title: `Duplicate of ${original.invoiceNumber}, ${paidTwice ? "paid twice" : "unpaid"}`,
-    calculation: paidTwice
-      ? `Invoice total ${total}, paid twice (${paymentRowsText(payments)}) = ${total}`
-      : `Invoice total ${total}, not yet paid = ${total} to block`,
+    title: `Duplicate of ${original.invoiceNumber}, ${paidForCopy ? `paid ${timesText(payments.length)}` : blockedTitle(payments.length)}`,
+    calculation: paidForCopy
+      ? `Invoice total ${total}, paid ${timesText(payments.length)} (${paymentRowsText(payments)}) = ${total}`
+      : blockedCalculation(total, payments),
     evidence: [
       evidenceItem(
         "Invoice number",

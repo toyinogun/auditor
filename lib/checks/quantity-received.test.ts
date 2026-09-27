@@ -62,7 +62,8 @@ describe("checkQuantityReceived (AC-10)", () => {
     expect(findings[0]).toMatchObject({
       invoiceDocumentId: 31,
       amountCents: 40 * 975,
-      calculation: "(400 billed − 360 received) × $9.75 = $390.00",
+      calculation:
+        "(100 billed + 300 billed earlier on PO-4502 − 360 received) × $9.75 = $390.00",
     });
     expect(
       findings[0].evidence.map((e) => [e.label, e.value, e.source.locator]),
@@ -83,7 +84,7 @@ describe("checkQuantityReceived (AC-10)", () => {
       [31, 50 * 975],
     ]);
     expect(findings[1].calculation).toBe(
-      "(430 billed − 360 received − 20 already flagged) × $9.75 = $487.50",
+      "(50 billed + 380 billed earlier on PO-4502 − 360 received − 20 already flagged) × $9.75 = $487.50",
     );
     expect(
       findings[1].evidence.find((e) => e.label.startsWith("Already over")),

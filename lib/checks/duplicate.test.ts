@@ -49,8 +49,43 @@ describe("findDuplicates (AC-4, AC-5)", () => {
     expect(findings[0]).toMatchObject({
       action: "block_payment",
       amountCents: 814100,
+      title: "Duplicate of NL-88310, only the original paid",
+      calculation:
+        "Invoice total $8,141.00, paid once (ap_payments.csv row 4), which covers only the original = $8,141.00 to block",
+    });
+  });
+
+  it("says not yet paid only when the group has no payment", () => {
+    const { findings } = run({ ...sample, payments: [] });
+    expect(findings[0]).toMatchObject({
+      action: "block_payment",
       title: "Duplicate of NL-88310, unpaid",
       calculation: "Invoice total $8,141.00, not yet paid = $8,141.00 to block",
+    });
+  });
+
+  it("counts a payment made against the copy as covering the original", () => {
+    const original = invoice("NL-88203");
+    const copy: InvoiceRecord = {
+      ...original,
+      documentId: 42,
+      invoiceNumber: "NL-99999",
+      invoiceDate: "2026-03-10",
+    };
+    const originalPayment = sample.payments.find((p) => p.rowNo === 2);
+    if (!originalPayment) throw new Error("no payment row 2");
+    const { findings } = run({
+      ...sample,
+      invoices: [...sample.invoices, copy],
+      payments: [
+        ...sample.payments.filter((p) => p.rowNo !== 2),
+        { ...originalPayment, rowNo: 6, invoiceNumber: "NL-99999" },
+      ],
+    });
+    expect(findings.find((f) => f.invoiceDocumentId === 42)).toMatchObject({
+      action: "block_payment",
+      calculation:
+        "Invoice total $10,906.00, paid once (ap_payments.csv row 6), which covers only the original = $10,906.00 to block",
     });
   });
 
@@ -70,6 +105,36 @@ describe("findDuplicates (AC-4, AC-5)", () => {
       [invoice("NL88310").documentId, "recover"],
       [40, "block_payment"],
     ]);
+    expect(findings[1]).toMatchObject({
+      title: "Duplicate of NL-88310, only earlier invoices paid",
+      calculation:
+        "Invoice total $8,141.00, paid twice (ap_payments.csv rows 4, 5), which covers only the original and 1 earlier copy = $8,141.00 to block",
+    });
+  });
+
+  it("recovers a third copy paid three times and says so", () => {
+    const third: InvoiceRecord = {
+      ...invoice("NL88310"),
+      documentId: 40,
+      invoiceNumber: "NL 88310",
+      invoiceDate: "2026-06-01",
+    };
+    const lastPayment = sample.payments.find((p) => p.rowNo === 5);
+    if (!lastPayment) throw new Error("no payment row 5");
+    const { findings } = run({
+      ...sample,
+      invoices: [...sample.invoices, third],
+      payments: [
+        ...sample.payments,
+        { ...lastPayment, rowNo: 6, invoiceNumber: "NL 88310" },
+      ],
+    });
+    expect(findings[1]).toMatchObject({
+      action: "recover",
+      title: "Duplicate of NL-88310, paid 3 times",
+      calculation:
+        "Invoice total $8,141.00, paid 3 times (ap_payments.csv rows 4, 5, 6) = $8,141.00",
+    });
   });
 
   it("matches on PO and total when the numbers differ", () => {

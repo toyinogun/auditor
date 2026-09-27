@@ -130,6 +130,10 @@ const skuFinding = (
   const amountCents = excess * price.cents;
   const crossing =
     alreadyOver > 0 ? crossingLine(earlier, received) : undefined;
+  const billedTerm =
+    billedBefore > 0
+      ? `${formatQuantity(quantityOf(here))} billed + ${formatQuantity(billedBefore)} billed earlier on ${po.poNumber}`
+      : `${formatQuantity(billedToDate)} billed`;
   const flaggedTerm =
     alreadyOver > 0
       ? ` ${MINUS} ${formatQuantity(alreadyOver)} already flagged`
@@ -139,7 +143,7 @@ const skuFinding = (
     detail: sku,
     amountCents,
     title: `${formatQuantity(excess)} ${TIMES} ${here[0].line.description} billed, not received`,
-    calculation: `(${formatQuantity(billedToDate)} billed ${MINUS} ${formatQuantity(received)} received${flaggedTerm}) ${TIMES} ${formatCents(price.cents)} = ${formatCents(amountCents)}`,
+    calculation: `(${billedTerm} ${MINUS} ${formatQuantity(received)} received${flaggedTerm}) ${TIMES} ${formatCents(price.cents)} = ${formatCents(amountCents)}`,
     evidence: [
       ...here.map(({ line }) =>
         evidenceItem(
