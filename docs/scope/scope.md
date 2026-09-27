@@ -24,7 +24,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 4 | Sample data generator | Release 1 | done |
 | 5 | Six audit checks | Release 1 | done |
 | 6 | Offline audit run | Release 1 | done |
-| 7 | LLM classify & extract | Release 2 | planned |
+| 7 | LLM classify & extract | Release 2 | done |
 | 8 | Upload & ingest | Release 2 | planned |
 | 9 | Design system & UI foundation | Release 3 | planned |
 | 10 | Review screen | Release 3 | planned |
@@ -101,10 +101,17 @@ code in `lib/audit/`, `scripts/audit-sample/` (`pnpm audit:sample`)
 
 The same audit, now reading the actual PDFs.
 
-### 7. LLM classify & extract · needs a decision
+### 7. LLM classify & extract · done
 One model call per document with one tool per document type, so a single call both classifies and extracts; the output is validated against the data model. Documents with a text layer send text, scanned ones send the file itself.
 **Done when:** a real run over the 12 sample PDFs produces the same findings and total as offline mode, the scanned invoice extracts correctly, and output that fails validation is rejected with a clear reason instead of stored.
-- [ ] Design it (spec): `/architect LLM classify & extract`
+spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract/`, `lib/ingest/csv.ts`, `lib/audit/`, `scripts/audit-live/` (`pnpm audit:live`)
+- [x] Design it (spec): `/architect LLM classify & extract`
+- [x] Build it: `/develop LLM classify & extract`
+  - [x] SDK, env, `lib/log.ts` and the import boundary lint rules (AC-12, AC-13)
+  - [x] Thin whole: strict tools, prompt, request and the text PDF path on a fake client, then the gated live smoke test (AC-1, AC-3, AC-14)
+  - [x] Scan path and input guards, then every failure path: repair turn, reject, refusal, cut off, API errors (AC-2, AC-4 to AC-7, AC-11)
+  - [x] CSV parsers moved to `lib/ingest/csv.ts`, then `pnpm audit:live` with compare and the atomic store, run green on a real key (AC-8 to AC-11)
+- [x] Verify it: `/check verify LLM classify & extract`
 
 ### 8. Upload & ingest · needs a decision
 Upload PDFs and CSVs in the browser, and one ingest endpoint that both the upload and the n8n workflow post to. On the public demo, uploads are limited to the sample files.
@@ -157,6 +164,7 @@ The public face of the repo: README with a screenshot, how to run it, and how th
 ## Deferred
 Out of scope for this build, kept so the plan stays honest.
 - **Logins and multi tenancy**: separate accounts and workspaces · needs a decision · GA
+- **Upwork prospect accounts**: once logins exist, create an account with its own username and password for each client you send an Upwork proposal to (where it fits), so they can use it live under that login · needs a decision · after logins
 - **Accounting system push**: send approved claims to QuickBooks or Xero (the brief's next step) · needs a decision
 - **Visitor uploads on the public demo**: real files with a rate limit or the visitor's own key · needs a decision
 - **CI on push**: GitHub Actions for typecheck, test and build, skipped for now (from spec 0001)

@@ -3,10 +3,10 @@ import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { extractText, getDocumentProxy } from "unpdf";
 import { beforeAll, describe, expect, it } from "vitest";
+import { parseCsv } from "../../lib/ingest/csv";
 import { toPaymentRecord, toReceiptRecord } from "../../lib/schemas/convert";
 import { BRIEF_SAMPLE } from "../../lib/schemas/fixtures/brief-sample";
 import { SampleManifest } from "../../lib/schemas/sample-manifest";
-import { parseCsv } from "./csv";
 import { dueDate, formatLongDate, formatMoney, formatQuantity } from "./format";
 import { FOOTER_TEXT, PAYMENT_TERMS_TEXT, SCAN_FILENAME } from "./parties";
 import {

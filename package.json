@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "generate:sample": "tsx scripts/generate-sample/index.ts",
     "audit:sample": "tsx --conditions=react-server scripts/audit-sample/index.ts",
+    "audit:live": "tsx --conditions=react-server --env-file-if-exists=.env.local scripts/audit-live/index.ts",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -25,6 +26,7 @@
     "*.{json,css,yml,yaml}": "prettier --write"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
     "better-sqlite3": "^13.0.3",
     "drizzle-orm": "^0.45.3",
     "next": "16.3.6",

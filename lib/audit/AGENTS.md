@@ -7,6 +7,9 @@ Loads records, runs the checks and stores the findings (spec 0001 layout). The g
 - `run.ts`: `runAudit(db, clock)` runs `runChecks(loadAuditInput(db))` over whatever is stored, saves it with `saveAuditRun` (replacing earlier findings, keeping decisions) and returns `{ runId, summary }`.
 - `sample.ts`: `runSampleAudit(db, clock, manifest)`, the offline audit and what "Load sample data" calls. In one transaction: `resetAll`, store the 14 sample documents with the real hashes from `public/sample/manifest.json`, save the fixture records via `briefSampleRecords`, then `runAudit`. A rerun replaces everything, decisions included; a throw rolls it all back.
 - `scripts/audit-sample/index.ts` exposes it as `pnpm audit:sample` against `$DATA_DIR/auditor.db`.
+- `store.ts`: the storage steps both runs share: `storeManifestDocuments` (manifest order, so document ids match), `trySaveAuditInput` (returns the first refused save as a value) and `saveAuditInput` (throws it).
+- `live.ts`: `runLiveAudit(db, manifest, deps)`, the live run (spec 0005). Extracts the PDFs 4 at a time, parses both CSVs, and stores only when all read cleanly, in one transaction (`storeLiveSample`). `compare.ts` lists every kind, record, finding and headline mismatch against offline mode.
+- `scripts/audit-live/index.ts` exposes it as `pnpm audit:live` (`--dump` writes each extraction to `$DATA_DIR/live-dump/`).
 
 ## Conventions
 
@@ -14,5 +17,6 @@ Loads records, runs the checks and stores the findings (spec 0001 layout). The g
 - Functions take `db` first and a `clock` (`() => number`, default `Date.now`) last, read once for the start and once for the finish. Tests pass a fixed clock and an `openDb(":memory:")` database.
 - The `lib/db` functions called inside `runSampleAudit`'s transaction open their own; better-sqlite3 runs them as savepoints, so pass the same `db` and never swap the driver without revisiting this.
 - A save that fails on the committed sample is a bug, so it throws (`orThrow` from `lib/schemas/result.ts`).
+- Live records come from the model, so a save the database refuses there is expected: `storeLiveSample` rolls back and returns `err`, and the run reports that file as `not stored`.
 
 _Drafted during the Feature 6 review, worth a quick human pass._
