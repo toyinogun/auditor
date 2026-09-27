@@ -164,7 +164,7 @@ spec [0009](../specs/0009-export/index.md) · code in `lib/export/`, `lib/audit/
   - [x] Thin whole: `readExport` and `handleExportRequest`, `/api/export`, the Export menu in the app bar, csv end to end (AC-1, AC-3, AC-12, AC-13)
   - [x] Excel: `exceljs`, the Findings and Summary sheets, round trip test (AC-7 to AC-9, AC-13)
   - [x] Edges and green pass: disabled Export with tooltip, 400 and 404, `export` log event, demo mode, full checks (AC-2, AC-3, AC-14 to AC-16)
-- [ ] Verify it: `/check verify export`
+- [x] Verify it: `/check verify export`
 
 ## Release 4: Intake and launch
 
