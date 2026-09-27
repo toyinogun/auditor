@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { formatHex8, parse } from "culori";
 import postcss, { type AtRule, type Root } from "postcss";
@@ -213,5 +213,73 @@ describe("design tokens match DESIGN.md", () => {
         `type-${role} font-feature-settings: DESIGN.md has ${spec.fontFeature}, globals.css has ${features}`,
       ).toBe(normalizeFeatures(spec.fontFeature));
     }
+  });
+});
+
+/**
+ * Source guards (spec 0007, AC-15): amber appears only where money was overpaid, and only the
+ * mapping layer reads the token file. Feature 10 adds its invoice paper file to the allowlist.
+ */
+
+const AMBER_ALLOWLIST = [
+  "app/globals.css",
+  "app/styles/",
+  "components/summary-tile.tsx",
+  "components/chip.tsx",
+  "app/styleguide/",
+];
+
+const TOKEN_FILE_READERS = [
+  "app/globals.css",
+  "app/styles/design-tokens.css",
+  "app/styles/design-tokens.test.ts",
+];
+
+const SCANNED_DIRS = ["app", "components", "lib"];
+const SCANNED_FILE = /\.(ts|tsx|css)$/;
+
+const listSources = (dir: string): readonly string[] =>
+  readdirSync(path.join(ROOT, dir), { recursive: true, encoding: "utf8" })
+    .filter((file) => SCANNED_FILE.test(file))
+    .map((file) => path.posix.join(dir, file.split(path.sep).join("/")));
+
+type Source = { readonly file: string; readonly text: string };
+
+const allowed = (file: string, list: readonly string[]): boolean =>
+  list.some((entry) =>
+    entry.endsWith("/") ? file.startsWith(entry) : file === entry,
+  );
+
+/** Files that break a guard, each named with the rule it breaks. */
+const guardViolations = (sources: readonly Source[]): readonly string[] =>
+  sources.flatMap(({ file, text }) => [
+    ...(/tertiary/i.test(text) && !allowed(file, AMBER_ALLOWLIST)
+      ? [`${file}: amber (tertiary) outside the allowlist`]
+      : []),
+    ...(/design-tokens\.css|--ds-/.test(text) &&
+    !allowed(file, TOKEN_FILE_READERS)
+      ? [`${file}: reads the token file or a --ds- name`]
+      : []),
+  ]);
+
+describe("source guards (AC-15)", () => {
+  it("finds no amber or token file reads outside their allowlists", () => {
+    const sources = SCANNED_DIRS.flatMap(listSources).map((file) => ({
+      file,
+      text: read(file),
+    }));
+    expect(guardViolations(sources)).toEqual([]);
+  });
+
+  it.each([
+    ["app/(app)/documents/page.tsx", '<div className="bg-tertiary-wash" />'],
+    [
+      "app/(app)/documents/page.tsx",
+      '<div className="bg-(--color-tertiary)" />',
+    ],
+    ["components/money.tsx", "color: var(--ds-color-primary);"],
+    ["components/app-bar.tsx", 'import "@/app/styles/design-tokens.css";'],
+  ])("fails %s for %s", (file, text) => {
+    expect(guardViolations([{ file, text }])).toHaveLength(1);
   });
 });

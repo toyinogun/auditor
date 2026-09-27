@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { mergeRows, type Row, type StoredDocumentRow } from "./upload-rows";
+import {
+  chipFor,
+  mergeRows,
+  type Row,
+  type StoredDocumentRow,
+} from "./upload-rows";
 
 const stored = (
   id: number,
@@ -69,5 +74,18 @@ describe("mergeRows", () => {
     );
     expect(rows).toHaveLength(1);
     expect(rows[0]?.key).toBe("retry");
+  });
+});
+
+describe("chipFor (spec 0007, AC-14)", () => {
+  it.each([
+    ["done", "approved", false],
+    ["already ingested", "approved", false],
+    ["uploading", "working", true],
+    ["in progress", "working", false],
+    ["failed", "rejected", false],
+    ["refused", "rejected", false],
+  ] as const)("shows %s as the %s look", (status, state, spin) => {
+    expect(chipFor(status)).toEqual({ state, label: status, spin });
   });
 });
