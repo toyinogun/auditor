@@ -4,7 +4,13 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     // Mirror the "@/*" path alias from tsconfig.json.
-    alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
+    alias: {
+      "@": fileURLToPath(new URL(".", import.meta.url)),
+      // Next resolves server-only to an empty module on the server; mirror that in tests.
+      "server-only": fileURLToPath(
+        new URL("./node_modules/server-only/empty.js", import.meta.url),
+      ),
+    },
   },
   test: {
     // lib/ is plain server side TypeScript; no DOM needed yet.
@@ -18,7 +24,5 @@ export default defineConfig({
       ".agents/**",
       ".claude/**",
     ],
-    // lib/ is still empty; lets the runner exit clean until the first test lands.
-    passWithNoTests: true,
   },
 });
