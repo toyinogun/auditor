@@ -3,7 +3,13 @@ import { findingKey } from "@/lib/schemas/keys";
 import type { Finding } from "@/lib/schemas/finding";
 import { BRIEF_INVOICED_TOTAL_CENTS } from "@/lib/schemas/fixtures/brief-sample";
 import { resetAll } from "./admin";
-import { decide, latestAuditRun, listFindings, saveAuditRun } from "./audit";
+import {
+  countDecisions,
+  decide,
+  latestAuditRun,
+  listFindings,
+  saveAuditRun,
+} from "./audit";
 import { openDb, type Db } from "./client";
 import { loadAuditInput } from "./records";
 import * as schema from "./schema";
@@ -260,5 +266,34 @@ describe("latestAuditRun", () => {
       invoicedTotalCents: BRIEF_INVOICED_TOTAL_CENTS,
       recoverableTotalCents: 0,
     });
+  });
+});
+
+describe("countDecisions (spec 0007, AC-13)", () => {
+  it("counts every stored decision, and none after a reset", () => {
+    const db = openDb(":memory:");
+    seedBriefSample(db);
+    saveAuditRun(db, RUN, sampleFindings(db));
+    expect(countDecisions(db)).toBe(0);
+
+    const [first, second] = sampleFindings(db);
+    decide(
+      db,
+      { findingKey: first.findingKey, status: "approved", reason: null },
+      TEST_NOW,
+    );
+    decide(
+      db,
+      {
+        findingKey: second.findingKey,
+        status: "rejected",
+        reason: "Credit note issued",
+      },
+      TEST_NOW,
+    );
+    expect(countDecisions(db)).toBe(2);
+
+    resetAll(db);
+    expect(countDecisions(db)).toBe(0);
   });
 });

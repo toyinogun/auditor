@@ -172,3 +172,10 @@ export type AuditRunRow = typeof auditRuns.$inferSelect;
 export const latestAuditRun = (db: Db): AuditRunRow | null =>
   db.select().from(auditRuns).orderBy(desc(auditRuns.id)).limit(1).get() ??
   null;
+
+/**
+ * Every stored decision, including ones that now read as pending because a finding's amount
+ * changed, since `resetAll` wipes those too (spec 0007, AC-13: the reload guard's N).
+ */
+export const countDecisions = (db: Db): number =>
+  db.select({ total: count() }).from(decisions).get()?.total ?? 0;

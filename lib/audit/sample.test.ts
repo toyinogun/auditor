@@ -5,7 +5,13 @@ import { auditRuns, decisions, documents, findings } from "@/lib/db/schema";
 import { TEST_NOW } from "@/lib/db/testing";
 import { BRIEF_INVOICED_TOTAL_CENTS } from "@/lib/schemas/fixtures/brief-sample";
 import { SAMPLE_MANIFEST_FILE_COUNT } from "@/lib/schemas/sample-manifest";
-import { loadSample, runSampleAudit, SAMPLE_MANIFEST } from "./sample";
+import {
+  loadSample,
+  loadSampleData,
+  runSampleAudit,
+  SAMPLE_LOAD_FAILED,
+  SAMPLE_MANIFEST,
+} from "./sample";
 
 const clock = () => TEST_NOW;
 
@@ -112,5 +118,72 @@ describe("loadSample (spec 0006, AC-14)", () => {
     };
     await expect(loadSample(db, { clear }, clock, broken)).rejects.toThrow();
     expect(clear).not.toHaveBeenCalled();
+  });
+});
+
+describe("loadSampleData (spec 0007, AC-12)", () => {
+  const logged = (): readonly unknown[] =>
+    vi
+      .mocked(process.stdout.write)
+      .mock.calls.map(([chunk]) => JSON.parse(String(chunk)));
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+  });
+
+  it("returns the finding count and recoverable total, and logs one event", async () => {
+    const db = openDb(":memory:");
+    const result = await loadSampleData(
+      db,
+      { clear: async () => undefined },
+      clock,
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      value: { findingCount: 8, recoverableCents: 976685 },
+    });
+    expect(logged()).toEqual([
+      expect.objectContaining({
+        event: "sample_loaded",
+        outcome: "ok",
+        findingCount: 8,
+      }),
+    ]);
+  });
+
+  it("returns an error and keeps the previous run when the load throws", async () => {
+    const db = openDb(":memory:");
+    runSampleAudit(db, clock);
+    const before = findingKeys(db);
+    const broken = {
+      files: SAMPLE_MANIFEST.files.filter(
+        (file) => file.filename !== "receipts.csv",
+      ),
+    };
+
+    const result = await loadSampleData(
+      db,
+      { clear: async () => undefined },
+      clock,
+      broken,
+    );
+
+    expect(result).toEqual({ ok: false, error: SAMPLE_LOAD_FAILED });
+    expect(findingKeys(db)).toEqual(before);
+    expect(db.select().from(auditRuns).all()).toHaveLength(1);
+    expect(logged()).toEqual([
+      expect.objectContaining({ event: "sample_loaded", outcome: "failed" }),
+    ]);
+  });
+
+  it("returns an error when the uploads folder cannot be emptied", async () => {
+    const db = openDb(":memory:");
+    const clear = async (): Promise<void> => {
+      throw new Error("EACCES: permission denied");
+    };
+    const result = await loadSampleData(db, { clear }, clock);
+    expect(result).toEqual({ ok: false, error: SAMPLE_LOAD_FAILED });
   });
 });

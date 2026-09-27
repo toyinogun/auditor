@@ -1,5 +1,7 @@
 import "server-only";
 import { resetAll } from "@/lib/db/admin";
+import { logEvent } from "@/lib/log";
+import { err, ok, type Result } from "@/lib/schemas/result";
 import type { Db } from "@/lib/db/client";
 import { BRIEF_SAMPLE } from "@/lib/schemas/fixtures/brief-sample";
 import { briefSampleRecords } from "@/lib/schemas/fixtures/brief-sample-records";
@@ -61,4 +63,43 @@ export const loadSample = async (
   const run = runSampleAudit(db, clock, manifest);
   await files.clear();
   return run;
+};
+
+export type SampleLoaded = {
+  readonly findingCount: number;
+  readonly recoverableCents: number;
+};
+
+export const SAMPLE_LOAD_FAILED = "could not load the sample data, try again";
+
+/**
+ * Load sample data (spec 0007, AC-12): `loadSample` for the app bar button, with a thrown load
+ * caught here and returned as an error, never a model call. Logs one `sample_loaded` event.
+ */
+export const loadSampleData = async (
+  db: Db,
+  files: Pick<UploadStore, "clear">,
+  clock: () => number = Date.now,
+  manifest: ManifestFiles = SAMPLE_MANIFEST,
+): Promise<Result<SampleLoaded>> => {
+  try {
+    const { summary } = await loadSample(db, files, clock, manifest);
+    logEvent({
+      event: "sample_loaded",
+      outcome: "ok",
+      findingCount: summary.findingCount,
+    });
+    return ok({
+      findingCount: summary.findingCount,
+      recoverableCents: summary.recoverableCents,
+    });
+  } catch (error) {
+    logEvent({
+      event: "sample_loaded",
+      outcome: "failed",
+      findingCount: null,
+      error: error instanceof Error ? error.name : "unknown",
+    });
+    return err(SAMPLE_LOAD_FAILED);
+  }
 };
