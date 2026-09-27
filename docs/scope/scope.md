@@ -124,7 +124,7 @@ spec [0006](../specs/0006-upload-ingest/index.md) · code in `lib/ingest/`, `app
   - [x] Duplicates, Retry and the restart sweep (AC-8, AC-10, AC-11)
   - [x] Demo gate and `loadSample` emptying uploads (AC-7, AC-14)
   - [x] `/api/ingest` webhook with its guards (AC-3, AC-5, AC-6, AC-17)
-- [ ] Verify it: `/check verify upload & ingest`
+- [x] Verify it: `/check verify upload & ingest`
 
 ## Release 3: Analyst review
 
