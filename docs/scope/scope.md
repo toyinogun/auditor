@@ -22,7 +22,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 2 | Coding standards & tooling | Foundation | done |
 | 3 | Data model | Foundation | done |
 | 4 | Sample data generator | Release 1 | done |
-| 5 | Six audit checks | Release 1 | in-progress |
+| 5 | Six audit checks | Release 1 | done |
 | 6 | Offline audit run | Release 1 | planned |
 | 7 | LLM classify & extract | Release 2 | planned |
 | 8 | Upload & ingest | Release 2 | planned |
@@ -78,7 +78,7 @@ spec [0003](../specs/0003-sample-data-generator/index.md) · code in `scripts/ge
   - [x] Commit `public/sample/` and the drift test (AC-1, AC-7)
 - [x] Verify it: `/check verify sample data generator`
 
-### 5. Six audit checks · Beta · in-progress
+### 5. Six audit checks · Beta · done
 The six checks as pure functions (contract price, duplicates against the ledger, quantity received, surcharges, freight, missing PO or contract price), each finding carrying its amount, a one line calculation and the file and clause behind every figure. The LLM never calculates money.
 **Done when:** tests assert all 8 expected findings and the $9,766.85 total (18.1% of $53,939.60), NL-88121 comes back clean, the duplicate NL88310's own price and freight issues are not counted a second time, and every finding shows its calculation and sources.
 spec [0004](../specs/0004-six-audit-checks/index.md) · code in `lib/checks/`, `lib/schemas/fixtures/brief-sample-records.ts`, `lib/db/audit.ts`
