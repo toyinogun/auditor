@@ -104,12 +104,12 @@ The same audit, now reading the actual PDFs.
 ### 7. LLM classify & extract · in-progress
 One model call per document with one tool per document type, so a single call both classifies and extracts; the output is validated against the data model. Documents with a text layer send text, scanned ones send the file itself.
 **Done when:** a real run over the 12 sample PDFs produces the same findings and total as offline mode, the scanned invoice extracts correctly, and output that fails validation is rejected with a clear reason instead of stored.
-spec [0005](../specs/0005-llm-classify-extract/index.md)
+spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract/`, `lib/ingest/csv.ts`, `lib/audit/`, `scripts/audit-live/` (`pnpm audit:live`)
 - [x] Design it (spec): `/architect LLM classify & extract`
 - [ ] Build it: `/develop LLM classify & extract`
-  - [ ] SDK, env, `lib/log.ts` and the import boundary lint rules (AC-12, AC-13)
+  - [x] SDK, env, `lib/log.ts` and the import boundary lint rules (AC-12, AC-13)
   - [ ] Thin whole: strict tools, prompt, request and the text PDF path on a fake client, then the gated live smoke test (AC-1, AC-3, AC-14)
-  - [ ] Scan path and input guards, then every failure path: repair turn, reject, refusal, cut off, API errors (AC-2, AC-4 to AC-7, AC-11)
+  - [x] Scan path and input guards, then every failure path: repair turn, reject, refusal, cut off, API errors (AC-2, AC-4 to AC-7, AC-11)
   - [ ] CSV parsers moved to `lib/ingest/csv.ts`, then `pnpm audit:live` with compare and the atomic store, run green on a real key (AC-8 to AC-11)
 - [ ] Verify it: `/check verify LLM classify & extract`
 
