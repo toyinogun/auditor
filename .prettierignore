@@ -13,4 +13,5 @@ skills-lock.json
 *.md
 public/sample/
 public/.sample.tmp/
+public/.sample.tmp.old/
 scripts/generate-sample/fonts/

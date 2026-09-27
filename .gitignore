@@ -44,5 +44,6 @@ next-env.d.ts
 # local database and uploads (DATA_DIR)
 /data/
 
-# sample generator temp folder (spec 0003)
+# sample generator temp and moved aside folders (spec 0003)
 /public/.sample.tmp/
+/public/.sample.tmp.old/

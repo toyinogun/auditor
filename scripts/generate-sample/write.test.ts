@@ -2,31 +2,41 @@ import {
   mkdtemp,
   readdir,
   readFile,
+  rename,
   rm,
   writeFile,
   mkdir,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { err, ok } from "../../lib/schemas/result";
 import { generateSampleFolder, summarize } from "./write";
+
+// Pass through to the real rename, so a test can make one call fail on demand.
+vi.mock("node:fs/promises", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:fs/promises")>();
+  return { ...actual, rename: vi.fn(actual.rename) };
+});
 
 const bytes = (text: string) => new TextEncoder().encode(text);
 
 let root = "";
 let outputDir = "";
 let tempDir = "";
+let backupDir = "";
 
 beforeEach(async () => {
   root = await mkdtemp(path.join(tmpdir(), "sample-write-"));
   outputDir = path.join(root, "sample");
   tempDir = path.join(root, ".sample.tmp");
+  backupDir = `${tempDir}.old`;
   await mkdir(outputDir);
   await writeFile(path.join(outputDir, "old.pdf"), "previous run");
 });
 
 afterEach(async () => {
+  vi.mocked(rename).mockRestore();
   await rm(root, { recursive: true, force: true });
 });
 
@@ -67,6 +77,38 @@ describe("generateSampleFolder (AC-1)", () => {
     const render = async () => ok([{ filename: "a.pdf", bytes: bytes("A") }]);
     await generateSampleFolder(render, outputDir, tempDir);
     expect(await readdir(outputDir)).toEqual(["a.pdf"]);
+  });
+
+  it("puts the previous folder back when moving the new set into place fails", async () => {
+    const realRename = vi.mocked(rename).getMockImplementation()!;
+    vi.mocked(rename).mockImplementation(async (from, to) => {
+      if (from === tempDir) throw new Error("EPERM: operation not permitted");
+      return realRename(from, to);
+    });
+    const render = async () => ok([{ filename: "a.pdf", bytes: bytes("A") }]);
+    const result = await generateSampleFolder(render, outputDir, tempDir);
+    expect(result).toEqual(
+      err(`writing ${outputDir}: EPERM: operation not permitted`),
+    );
+    expect(await readdir(outputDir)).toEqual(["old.pdf"]);
+    expect(await readdir(root)).toEqual(["sample"]);
+  });
+
+  it("recovers the previous folder when an earlier run was killed mid swap", async () => {
+    await rename(outputDir, backupDir);
+    const render = async () => err("NL-88310.pdf: line 1: does not add up");
+    await generateSampleFolder(render, outputDir, tempDir);
+    expect(await readdir(outputDir)).toEqual(["old.pdf"]);
+    expect(await readdir(root)).toEqual(["sample"]);
+  });
+
+  it("drops a leftover moved aside folder once the output folder is present", async () => {
+    await mkdir(backupDir);
+    await writeFile(path.join(backupDir, "older.pdf"), "older run");
+    const render = async () => ok([{ filename: "a.pdf", bytes: bytes("A") }]);
+    await generateSampleFolder(render, outputDir, tempDir);
+    expect(await readdir(outputDir)).toEqual(["a.pdf"]);
+    expect(await readdir(root)).toEqual(["sample"]);
   });
 });
 

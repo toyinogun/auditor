@@ -37,6 +37,7 @@ const eslintConfig = defineConfig([
     ".claude/**",
     "public/sample/**",
     "public/.sample.tmp/**",
+    "public/.sample.tmp.old/**",
   ]),
 ]);
 

@@ -4,7 +4,7 @@ The sample data generator: `pnpm generate:sample` turns `BRIEF_SAMPLE` (`lib/sch
 
 ## Files
 
-- `index.ts`: the CLI entry. `write.ts` renders into `public/.sample.tmp/` and swaps it into `public/sample/` only when every file succeeded.
+- `index.ts`: the CLI entry. `write.ts` renders into `public/.sample.tmp/` and swaps it into `public/sample/` only when every file succeeded, moving the old folder aside to `public/.sample.tmp.old/` and deleting it only once the new one is in place (a run killed mid swap is recovered by the next run).
 - `validate.ts`: runs every fixture document and CSV row through the `lib/schemas` converters before anything renders; errors name the file and line or row.
 - `render.ts`: `renderSample()` returns all 15 files in memory, with no disk writes (the tests use it).
 - `layout/`: one pure function per document type, fixture entry to a `Page` of drawing operations (`layout/page.ts`). `layout/common.ts` holds the shared blocks (letterhead, table, footer, word wrap, page flow).

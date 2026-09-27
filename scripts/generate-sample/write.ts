@@ -1,4 +1,4 @@
-import { mkdir, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { err, type Result } from "../../lib/schemas/result";
 import type { RenderedFile } from "./render";
@@ -8,17 +8,54 @@ type Render = () => Promise<Result<readonly RenderedFile[]>>;
 const describeError = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
+const exists = (dir: string): Promise<boolean> =>
+  stat(dir).then(
+    () => true,
+    () => false,
+  );
+
+/** A run killed between the two renames leaves only the moved aside folder: put it back. */
+const recoverInterruptedSwap = async (
+  outputDir: string,
+  backupDir: string,
+): Promise<void> => {
+  if (!(await exists(outputDir)) && (await exists(backupDir))) {
+    await rename(backupDir, outputDir);
+  }
+  await rm(backupDir, { recursive: true, force: true });
+};
+
+/** Moves the old folder aside, moves the new one in, and only then deletes the old one. */
+const swapIn = async (
+  tempDir: string,
+  outputDir: string,
+  backupDir: string,
+): Promise<void> => {
+  const hadOutput = await exists(outputDir);
+  if (hadOutput) await rename(outputDir, backupDir);
+  try {
+    await rename(tempDir, outputDir);
+  } catch (error: unknown) {
+    if (hadOutput) await rename(backupDir, outputDir);
+    throw error;
+  }
+  await rm(backupDir, { recursive: true, force: true });
+};
+
 /**
  * Renders, writes every file into `tempDir`, then swaps it into `outputDir` (AC-1). A failed
- * render or write leaves `outputDir` untouched; `tempDir` must sit on the same disk so the rename
- * cannot fail with EXDEV. The previous folder is only removed once the new set is complete.
+ * render, write or swap leaves the previous `outputDir` in place; a run killed mid swap is
+ * recovered by the next one. `tempDir` must sit on the same disk so the renames cannot fail with
+ * EXDEV; the old folder waits beside it in `<tempDir>.old` until the new set is in place.
  */
 export const generateSampleFolder = async (
   render: Render,
   outputDir: string,
   tempDir: string,
 ): Promise<Result<readonly RenderedFile[]>> => {
+  const backupDir = `${tempDir}.old`;
   try {
+    await recoverInterruptedSwap(outputDir, backupDir);
     await rm(tempDir, { recursive: true, force: true });
     const rendered = await render();
     if (!rendered.ok) return rendered;
@@ -28,8 +65,7 @@ export const generateSampleFolder = async (
         writeFile(path.join(tempDir, file.filename), file.bytes),
       ),
     );
-    await rm(outputDir, { recursive: true, force: true });
-    await rename(tempDir, outputDir);
+    await swapIn(tempDir, outputDir, backupDir);
     return rendered;
   } catch (error: unknown) {
     await rm(tempDir, { recursive: true, force: true });
