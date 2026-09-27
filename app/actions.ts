@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { recordDecision, type DecisionMade } from "@/lib/audit/review";
 import {
   loadSampleData as loadSampleIntoDb,
   type SampleLoaded,
@@ -13,11 +14,14 @@ import {
   type IngestError,
   type IngestOutcome,
 } from "@/lib/ingest/ingest";
+import type { DecisionStatus } from "@/lib/schemas/enums";
+import type { DecideError } from "@/lib/schemas/finding";
 import { err, type Result } from "@/lib/schemas/result";
 
 /**
  * Server Actions. The upload panel's (spec 0006) only turn the form into bytes; every check,
- * including the demo gate, lives in `ingestFile`. Load sample data is spec 0007's.
+ * including the demo gate, lives in `ingestFile`. Load sample data is spec 0007's; Approve and
+ * Reject are spec 0008's.
  */
 
 /**
@@ -74,4 +78,27 @@ export const retryUpload = async (
     });
   }
   return retryDocument(getDb(), documentId, ingestDeps());
+};
+
+export type DecideFindingInput = {
+  readonly findingKey: string;
+  readonly status: DecisionStatus;
+  readonly reason: string | null;
+};
+
+export type DecideFindingResult = Result<DecisionMade, DecideError>;
+
+/**
+ * Approve or Reject on the review screen (spec 0008, AC-8, AC-9, AC-12). Trusts nothing from the
+ * client: `decide` parses the input and reads the amount from the database. A stale key also
+ * revalidates, so the list the analyst sees catches up with the reload that removed it.
+ */
+export const decideFinding = async (
+  input: DecideFindingInput,
+): Promise<DecideFindingResult> => {
+  const result = recordDecision(getDb(), input);
+  if (result.ok || result.error.code === "finding_not_found") {
+    await revalidateAudit();
+  }
+  return result;
 };

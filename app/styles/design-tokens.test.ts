@@ -227,6 +227,7 @@ const AMBER_ALLOWLIST = [
   "components/summary-tile.tsx",
   "components/chip.tsx",
   "app/styleguide/",
+  "app/(app)/review/_components/invoice-paper.tsx",
 ];
 
 const TOKEN_FILE_READERS = [

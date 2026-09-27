@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { decide, listFindings, type FindingView } from "@/lib/db/audit";
-import { openDb } from "@/lib/db/client";
+import { openDb, type Db } from "@/lib/db/client";
 import { TEST_NOW } from "@/lib/db/testing";
 import type { DecisionState } from "@/lib/schemas/finding";
-import { nextPendingKey, reviewTotals } from "./review";
+import { nextPendingKey, recordDecision, reviewTotals } from "./review";
 import { runSampleAudit } from "./sample";
 
 const APPROVED: DecisionState = {
@@ -165,5 +165,116 @@ describe("the brief sample under review (spec 0008, AC-16)", () => {
       pendingCount: 0,
       findingCount: 8,
     });
+  });
+});
+
+describe("recordDecision (spec 0008, AC-8, AC-9, AC-12, AC-15)", () => {
+  let db: Db;
+  let keys: readonly string[];
+  let written: string[];
+
+  beforeEach(() => {
+    db = openDb(":memory:");
+    runSampleAudit(db, () => TEST_NOW);
+    keys = listFindings(db).map((finding) => finding.findingKey);
+    written = [];
+    vi.spyOn(process.stdout, "write").mockImplementation((chunk) => {
+      written.push(String(chunk));
+      return true;
+    });
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const events = (): readonly Record<string, unknown>[] =>
+    written
+      .map((line) => JSON.parse(line) as Record<string, unknown>)
+      .filter((event) => event.event === "finding_decided");
+
+  it("stores an approval and returns the next pending key", () => {
+    const result = recordDecision(
+      db,
+      { findingKey: keys[0], status: "approved", reason: null },
+      TEST_NOW,
+    );
+    expect(result).toEqual({
+      ok: true,
+      value: { status: "approved", nextFindingKey: keys[1] },
+    });
+    expect(listFindings(db)[0].decision.status).toBe("approved");
+    expect(events()).toEqual([
+      expect.objectContaining({
+        status: "approved",
+        checkId: "duplicate",
+        outcome: "ok",
+      }),
+    ]);
+  });
+
+  it("returns null once nothing is pending", () => {
+    keys
+      .slice(0, -1)
+      .forEach((findingKey) =>
+        recordDecision(db, { findingKey, status: "approved", reason: null }),
+      );
+    expect(
+      recordDecision(db, {
+        findingKey: keys[keys.length - 1],
+        status: "rejected",
+        reason: "PO added by hand",
+      }),
+    ).toEqual({
+      ok: true,
+      value: { status: "rejected", nextFindingKey: null },
+    });
+  });
+
+  it("refuses a blank reason as invalid_input and never logs the reason", () => {
+    const result = recordDecision(db, {
+      findingKey: keys[0],
+      status: "rejected",
+      reason: "  ",
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: "invalid_input" },
+    });
+    recordDecision(db, {
+      findingKey: keys[1],
+      status: "rejected",
+      reason: "secret analyst note",
+    });
+    expect(written.join("")).not.toContain("secret analyst note");
+    expect(events().map((event) => event.outcome)).toEqual([
+      "invalid_input",
+      "ok",
+    ]);
+  });
+
+  it("saves nothing for a stale key and logs finding_not_found without a checkId", () => {
+    const result = recordDecision(db, {
+      findingKey: "gone",
+      status: "approved",
+      reason: null,
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: "finding_not_found" },
+    });
+    expect(listFindings(db).every((f) => f.decision.status === "pending")).toBe(
+      true,
+    );
+    const [event] = events();
+    expect(event).toMatchObject({
+      status: "approved",
+      outcome: "finding_not_found",
+    });
+    expect(event).not.toHaveProperty("checkId");
+  });
+
+  it("logs a null status for a malformed input", () => {
+    recordDecision(db, "not an object");
+    expect(events()).toEqual([
+      expect.objectContaining({ status: null, outcome: "invalid_input" }),
+    ]);
   });
 });
