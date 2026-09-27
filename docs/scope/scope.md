@@ -25,7 +25,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5 | Six audit checks | Release 1 | done |
 | 6 | Offline audit run | Release 1 | done |
 | 7 | LLM classify & extract | Release 2 | done |
-| 8 | Upload & ingest | Release 2 | in-progress |
+| 8 | Upload & ingest | Release 2 | done |
 | 9 | Design system & UI foundation | Release 3 | planned |
 | 10 | Review screen | Release 3 | planned |
 | 11 | Export | Release 3 | planned |
@@ -113,7 +113,7 @@ spec [0005](../specs/0005-llm-classify-extract/index.md) · code in `lib/extract
   - [x] CSV parsers moved to `lib/ingest/csv.ts`, then `pnpm audit:live` with compare and the atomic store, run green on a real key (AC-8 to AC-11)
 - [x] Verify it: `/check verify LLM classify & extract`
 
-### 8. Upload & ingest · in-progress
+### 8. Upload & ingest · done
 Upload PDFs and CSVs in the browser, and one ingest endpoint that both the upload and the n8n workflow post to. On the public demo, uploads are limited to the sample files.
 **Done when:** an uploaded file is stored, extracted and audited; the endpoint rejects unknown file types, oversized files and unauthenticated webhook calls; the public demo cannot send outside documents to the model.
 spec [0006](../specs/0006-upload-ingest/index.md) · code in `lib/ingest/`, `app/actions.ts`, `app/api/ingest/`, `app/_components/upload-panel.tsx`

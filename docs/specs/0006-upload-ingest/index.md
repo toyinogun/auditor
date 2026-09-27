@@ -1,7 +1,7 @@
 # 0006. Upload and ingest, one intake path for the browser and n8n
 
 **Date**: 2026-09-27
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
