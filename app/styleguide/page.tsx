@@ -222,7 +222,7 @@ export default async function StyleguidePage() {
             <Money cents={0} size="lg" />
           </SummaryTile>
           <SummaryTile label="Pending">8</SummaryTile>
-          <SummaryTile label="Of invoiced">18.1%</SummaryTile>
+          <SummaryTile label="% of invoiced">18.1%</SummaryTile>
         </div>
       </Section>
 

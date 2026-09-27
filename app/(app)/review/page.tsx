@@ -41,7 +41,7 @@ function Headline({ headline }: { readonly headline: Headline }) {
           <Money cents={headline.recoverableCents} size="display" />
         </SummaryTile>
         <SummaryTile label="Findings">{headline.findingCount}</SummaryTile>
-        <SummaryTile label="Of invoiced">
+        <SummaryTile label="% of invoiced">
           {headline.recoverableShare}
         </SummaryTile>
       </section>
