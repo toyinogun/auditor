@@ -76,7 +76,7 @@ spec [0003](../specs/0003-sample-data-generator/index.md) · code in `scripts/ge
   - [x] Purchase order and contract layouts with pinned clause wording (AC-3, AC-5, AC-9)
   - [x] NL88310 image only scan (AC-4, AC-8)
   - [x] Commit `public/sample/` and the drift test (AC-1, AC-7)
-- [ ] Verify it: `/check verify sample data generator`
+- [x] Verify it: `/check verify sample data generator`
 
 ### 5. Six audit checks · Beta · needs a decision
 The six checks as pure functions (contract price, duplicates against the ledger, quantity received, surcharges, freight, missing PO or contract price), each finding carrying its amount, a one line calculation and the file and clause behind every figure. The LLM never calculates money.
