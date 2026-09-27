@@ -21,7 +21,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
 | 3 | Data model | Foundation | done |
-| 4 | Sample data generator | Release 1 | planned |
+| 4 | Sample data generator | Release 1 | in-progress |
 | 5 | Six audit checks | Release 1 | planned |
 | 6 | Offline audit run | Release 1 | planned |
 | 7 | LLM classify & extract | Release 2 | planned |
@@ -65,10 +65,18 @@ spec [0002](../specs/0002-data-model/index.md) · code in `lib/schemas/`, `lib/d
 
 The smallest complete audit: fictional documents go in, the checks run with no API key, and the finding log matches the brief to the cent.
 
-### 4. Sample data generator · needs a decision
+### 4. Sample data generator · in-progress
 A script that produces the brief's fictional world exactly: 12 real PDFs (2 contracts, 4 purchase orders, 6 invoices), `receipts.csv`, `ap_payments.csv`, and a matching structured copy of every document for offline mode.
 **Done when:** running the script writes all 12 PDFs and both CSVs with the brief's exact figures, at least one invoice is an image only scan with no text layer, and the output is identical on every run.
-- [ ] Design it (spec): `/architect sample data generator`
+spec [0003](../specs/0003-sample-data-generator/index.md) · code in `scripts/generate-sample/`, `lib/schemas/sample-manifest.ts`, `public/sample/`
+- [x] Design it (spec): `/architect sample data generator`
+- [ ] Build it: `/develop sample data generator`
+  - [ ] Dependencies, fonts, `generate:sample` command, manifest schema and the fixture guard (AC-2, AC-8)
+  - [ ] Thin whole: text invoices, CSVs, manifest and the atomic folder swap, with read back tests (AC-1, AC-3, AC-6, AC-7, AC-9)
+  - [ ] Purchase order and contract layouts with pinned clause wording (AC-3, AC-5, AC-9)
+  - [ ] NL88310 image only scan (AC-4, AC-8)
+  - [ ] Commit `public/sample/` and the drift test (AC-1, AC-7)
+- [ ] Verify it: `/check verify sample data generator`
 
 ### 5. Six audit checks · Beta · needs a decision
 The six checks as pure functions (contract price, duplicates against the ledger, quantity received, surcharges, freight, missing PO or contract price), each finding carrying its amount, a one line calculation and the file and clause behind every figure. The LLM never calculates money.
