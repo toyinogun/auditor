@@ -1,5 +1,5 @@
 import "server-only";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import type {
   DocumentKind,
   DocumentSource,
@@ -129,3 +129,18 @@ export const listDocuments = (db: Db): readonly DocumentListItem[] =>
     .orderBy(desc(documents.createdAt), desc(documents.id))
     .limit(DOCUMENT_LIST_LIMIT)
     .all();
+
+/** The reason a restart leaves on a document it interrupted (spec 0006, AC-11). */
+export const INTERRUPTED_REASON = "interrupted by a restart, retry it";
+
+/**
+ * At server start, nothing is extracting any more: every `queued` or `extracting` document
+ * becomes `failed` so it can be retried (AC-11). Returns how many; running it twice is harmless.
+ */
+export const failInterrupted = (db: Db, now: number = Date.now()): number =>
+  db
+    .update(documents)
+    .set({ status: "failed", error: INTERRUPTED_REASON, updatedAt: now })
+    .where(inArray(documents.status, ["queued", "extracting"]))
+    .returning({ id: documents.id })
+    .all().length;

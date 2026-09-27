@@ -3,7 +3,9 @@ import { openDb, type Db } from "./client";
 import {
   claimDocument,
   DOCUMENT_LIST_LIMIT,
+  failInterrupted,
   getDocument,
+  INTERRUPTED_REASON,
   insertDocument,
   listDocuments,
   setDocumentStatus,
@@ -167,5 +169,34 @@ describe("getDocument and listDocuments", () => {
       insertDocument(db, { ...doc, sha256: `sha-${index}` }, TEST_NOW + index),
     );
     expect(listDocuments(db)).toHaveLength(DOCUMENT_LIST_LIMIT);
+  });
+});
+
+describe("failInterrupted (spec 0006, AC-11)", () => {
+  it("fails queued and extracting documents, leaves done and failed alone", () => {
+    const db = openDb(":memory:");
+    const add = (sha256: string) =>
+      insertDocument(db, { ...doc, sha256 }, TEST_NOW).document.id;
+    const queued = add("q");
+    const extracting = add("e");
+    const done = add("d");
+    const failed = add("f");
+    claimDocument(db, extracting, "queued");
+    setDocumentStatus(db, done, { status: "done" });
+    setDocumentStatus(db, failed, { status: "failed", error: "bad" });
+
+    expect(failInterrupted(db, TEST_NOW + 9)).toBe(2);
+    expect(getDocument(db, queued)).toMatchObject({
+      status: "failed",
+      error: INTERRUPTED_REASON,
+      updatedAt: TEST_NOW + 9,
+    });
+    expect(getDocument(db, extracting)).toMatchObject({ status: "failed" });
+    expect(getDocument(db, done)).toMatchObject({
+      status: "done",
+      error: null,
+    });
+    expect(getDocument(db, failed)).toMatchObject({ error: "bad" });
+    expect(failInterrupted(db)).toBe(0);
   });
 });

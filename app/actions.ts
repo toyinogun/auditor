@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db/client";
 import { ingestDeps } from "@/lib/ingest/deps";
 import {
   ingestFile,
+  retryDocument,
   type IngestError,
   type IngestOutcome,
 } from "@/lib/ingest/ingest";
@@ -36,4 +37,18 @@ export const uploadFile = async (
     },
     ingestDeps(),
   );
+};
+
+/** Retry on a failed row: ingest again from the saved file (spec 0006, AC-10). */
+export const retryUpload = async (
+  documentId: number,
+): Promise<IngestActionResult> => {
+  if (!Number.isSafeInteger(documentId) || documentId < 1) {
+    return err({
+      code: "not_failed",
+      message: "not a document id",
+      documentId: null,
+    });
+  }
+  return retryDocument(getDb(), documentId, ingestDeps());
 };

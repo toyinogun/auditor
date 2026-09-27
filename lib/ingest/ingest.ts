@@ -6,6 +6,7 @@ import { saveDocumentRecords, type DocumentRecords } from "@/lib/audit/store";
 import type { Db } from "@/lib/db/client";
 import {
   claimDocument,
+  getDocument,
   insertDocument,
   setDocumentStatus,
   type StoredDocument,
@@ -76,6 +77,7 @@ export type IngestError = {
 type IngestResult = Result<IngestOutcome, IngestError>;
 
 const UNEXPECTED_FAILURE = "an unexpected error stopped this file, retry it";
+const MISSING_FILE = "the saved file is missing, upload it again";
 
 const refuse = (
   code: IngestErrorCode,
@@ -160,6 +162,26 @@ const recordsFor = async (
   return extracted.ok ? pdfRecords(extracted.value, ref) : extracted;
 };
 
+/** Where a stored document's file lives, from the type `detectFile` recorded. */
+const extensionOf = (document: StoredDocument): "pdf" | "csv" =>
+  document.mimeType === "text/csv" ? "csv" : "pdf";
+
+/** Marks a document `failed` with this reason and answers with it. */
+const failWith = (
+  db: Db,
+  document: StoredDocument,
+  reason: string,
+  deps: IngestDeps,
+): IngestResult => {
+  setDocumentStatus(
+    db,
+    document.id,
+    { status: "failed", error: reason },
+    deps.clock(),
+  );
+  return refuse("failed", reason, document.id);
+};
+
 /**
  * Steps 7 to 9 for a document this caller has claimed (`extracting`): get the records, store
  * them (which marks it `done`) or mark it `failed` with the reason, then rerun the audit.
@@ -175,15 +197,7 @@ const processClaimed = async (
   const saved = records.ok
     ? saveDocumentRecords(db, records.value, deps.clock())
     : records;
-  if (!saved.ok) {
-    setDocumentStatus(
-      db,
-      document.id,
-      { status: "failed", error: saved.error },
-      deps.clock(),
-    );
-    return refuse("failed", saved.error, document.id);
-  }
+  if (!saved.ok) return failWith(db, document, saved.error, deps);
   runAudit(db, deps.clock);
   return ok({
     documentId: document.id,
@@ -320,6 +334,55 @@ export const ingestFile = async (
       source: input.source,
       filename: named.filename,
       sizeBytes: input.bytes.length,
+      startedAt,
+    },
+    result,
+    deps,
+  );
+  return result;
+};
+
+const retrySteps = async (
+  db: Db,
+  document: StoredDocument | null,
+  documentId: number,
+  deps: IngestDeps,
+): Promise<IngestResult> => {
+  if (document === null) {
+    return refuse("not_failed", `document ${documentId} does not exist`);
+  }
+  if (document.status === "queued" || document.status === "extracting") {
+    return refuse("in_progress", "already being processed", document.id);
+  }
+  if (document.status !== "failed") {
+    return refuse(
+      "not_failed",
+      "only a failed document can be retried",
+      document.id,
+    );
+  }
+  const bytes = await deps.files.read(document.sha256, extensionOf(document));
+  if (bytes === null) return failWith(db, document, MISSING_FILE, deps);
+  // A failed document's kind is still null, so the type is worked out again (AC-10).
+  const detected = detectFile(document.filename, bytes, deps.maxUploadBytes);
+  if (!detected.ok) return failWith(db, document, detected.error.message, deps);
+  return claimAndProcess(db, document, "failed", detected.value, bytes, deps);
+};
+
+/** Runs ingest again on a failed document from its saved file (spec 0006, AC-10). */
+export const retryDocument = async (
+  db: Db,
+  documentId: number,
+  deps: IngestDeps,
+): Promise<IngestResult> => {
+  const startedAt = deps.clock();
+  const document = getDocument(db, documentId);
+  const result = await retrySteps(db, document, documentId, deps);
+  logIngest(
+    {
+      source: document?.source ?? "unknown",
+      filename: document?.filename ?? "",
+      sizeBytes: document?.sizeBytes ?? 0,
       startedAt,
     },
     result,
