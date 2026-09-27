@@ -28,7 +28,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 8 | Upload & ingest | Release 2 | done |
 | 9 | Design system & UI foundation | Release 3 | done |
 | 10 | Review screen | Release 3 | done |
-| 11 | Export | Release 3 | in-progress |
+| 11 | Export | Release 3 | done |
 | 12 | n8n Drive intake | Release 4 | planned |
 | 13 | Landing page & social card | Release 4 | planned |
 | 14 | Public demo deploy | Release 4 | planned |
@@ -154,7 +154,7 @@ spec [0008](../specs/0008-review-screen/index.md) · code in `app/(app)/review/`
   - [x] Logging and full green pass: `finding_decided` event, typecheck, lint, test, build, design lint (AC-15, AC-17)
 - [x] Verify it: `/check verify review screen`
 
-### 11. Export · in-progress
+### 11. Export · done
 The finding log as `.xlsx` and `.csv`, including the analyst's decisions and a total row.
 **Done when:** both files open cleanly, list every finding with its evidence and decision, and the total row matches the review screen after approvals and rejections.
 spec [0009](../specs/0009-export/index.md) · code in `lib/export/`, `lib/audit/export.ts`, `app/api/export/` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1g export menu chosen; 1h claim preview deferred)

@@ -1,7 +1,7 @@
 # 0009. Export the finding log as .xlsx and .csv
 
 **Date**: 2026-09-27
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 
