@@ -133,6 +133,17 @@ describe("saveAuditRun (AC-12)", () => {
     expect(second.amountCents).toBe(0);
   });
 
+  it("names each finding's supplier and invoice number (spec 0008, AC-2)", () => {
+    saveAuditRun(db, RUN, sampleFindings(db));
+    const [first, second] = listFindings(db);
+    expect(first).toMatchObject({
+      invoiceNumber: "NL-88310",
+      supplierName: expect.any(String),
+    });
+    expect(first.supplierName.length).toBeGreaterThan(0);
+    expect(second.invoiceNumber).toBe("BW-5530");
+  });
+
   it("rolls back the whole run when a finding names a document with no invoice", () => {
     saveAuditRun(db, RUN, sampleFindings(db));
     const [bad] = sampleFindings(db);
@@ -207,15 +218,43 @@ describe("decide (AC-13)", () => {
 
   it.each([null, "", "   "])("refuses a reject with reason %j", (reason) => {
     const result = decide(db, { findingKey: key, status: "rejected", reason });
-    expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toContain("reason");
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: "invalid_input" },
+    });
+    if (!result.ok) expect(result.error.message).toContain("reason");
     expect(listFindings(db)[0].decision).toEqual({ status: "pending" });
   });
 
-  it("refuses an unknown finding key", () => {
+  it("refuses a reason over 500 characters (spec 0008, AC-9)", () => {
+    const reason = "x".repeat(501);
     expect(
-      decide(db, { findingKey: "nope", status: "approved", reason: null }).ok,
-    ).toBe(false);
+      decide(db, { findingKey: key, status: "rejected", reason }),
+    ).toMatchObject({ ok: false, error: { code: "invalid_input" } });
+    expect(
+      decide(db, {
+        findingKey: key,
+        status: "rejected",
+        reason: "x".repeat(500),
+      }).ok,
+    ).toBe(true);
+  });
+
+  it("refuses an unknown finding key as finding_not_found (spec 0008, AC-12)", () => {
+    expect(
+      decide(db, { findingKey: "nope", status: "approved", reason: null }),
+    ).toMatchObject({ ok: false, error: { code: "finding_not_found" } });
+    expect(countDecisions(db)).toBe(0);
+  });
+
+  it("ignores an amount sent by the caller and snapshots the stored one", () => {
+    const result = decide(db, {
+      findingKey: key,
+      status: "approved",
+      reason: null,
+      amountCents: 1,
+    });
+    expect(result).toMatchObject({ ok: true, value: { amountCents: 37500 } });
   });
 });
 

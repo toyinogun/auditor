@@ -15,6 +15,7 @@ import {
   MINUS,
   sumCents,
   TIMES,
+  EVIDENCE_LABEL,
 } from "./evidence";
 
 /** Lines billed above the contract price, one finding per invoice and SKU (spec 0004, AC-13). */
@@ -51,20 +52,20 @@ const skuFinding = (
     evidence: [
       ...over.flatMap((line) => [
         evidenceItem(
-          "Billed unit price",
+          EVIDENCE_LABEL.billedUnitPrice,
           formatCents(line.unitPriceCents),
           invoice,
           lineLocator(line.lineNo),
         ),
         evidenceItem(
-          "Quantity billed",
+          EVIDENCE_LABEL.quantityBilled,
           formatQuantity(line.quantity),
           invoice,
           lineLocator(line.lineNo),
         ),
       ]),
       evidenceItem(
-        "Contract price",
+        EVIDENCE_LABEL.contractPrice,
         formatCents(price.unitPriceCents),
         contract,
         price.clause,

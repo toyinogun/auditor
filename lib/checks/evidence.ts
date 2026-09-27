@@ -17,6 +17,34 @@ export const INVOICE_LABEL = {
   total: "Invoice total",
 } as const;
 
+/**
+ * Evidence labels the checks emit. The review screen reads them to decide what to highlight
+ * (spec 0008, AC-5), so a check never writes a label as a bare string. Labels that name a PO
+ * ("Billed earlier on PO-1", "Already over on PO-1") are built from a template instead.
+ */
+export const EVIDENCE_LABEL = {
+  billedUnitPrice: "Billed unit price",
+  quantityBilled: "Quantity billed",
+  contractPrice: "Contract price",
+  freightBilled: "Freight billed",
+  freightTerms: "Freight terms",
+  poNumber: "PO number",
+  invoiceDate: "Invoice date",
+  billedSku: "Billed SKU",
+  invoiceNumber: "Invoice number",
+  invoiceTotal: "Invoice total",
+  originalInvoice: "Original invoice",
+  matchedOn: "Matched on",
+  payment: "Payment",
+  priceUsed: "Price used",
+  quantityReceived: "Quantity received",
+  surchargeBilled: "Surcharge billed",
+  permittedSurcharges: "Permitted surcharges",
+  subtotal: "Subtotal",
+  cap: "Cap",
+  chargeBilled: "Charge billed",
+} as const;
+
 /** 1500 becomes "1,500". */
 export const formatQuantity = (quantity: number): string =>
   quantity.toLocaleString("en-US");

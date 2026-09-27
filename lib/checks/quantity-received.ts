@@ -17,6 +17,7 @@ import {
   rowLocator,
   sumQuantities,
   TIMES,
+  EVIDENCE_LABEL,
 } from "./evidence";
 
 /**
@@ -51,7 +52,7 @@ const priceUsed = (
     return {
       cents: price.unitPriceCents,
       evidence: evidenceItem(
-        "Price used",
+        EVIDENCE_LABEL.priceUsed,
         formatCents(price.unitPriceCents),
         contract,
         price.clause,
@@ -64,7 +65,7 @@ const priceUsed = (
   return {
     cents: lowest.line.unitPriceCents,
     evidence: evidenceItem(
-      "Price used",
+      EVIDENCE_LABEL.priceUsed,
       formatCents(lowest.line.unitPriceCents),
       invoice,
       lineLocator(lowest.line.lineNo),
@@ -90,7 +91,7 @@ const receivedEvidence = (
   if (receipts.length > 0) {
     return receipts.map((receipt) =>
       evidenceItem(
-        "Quantity received",
+        EVIDENCE_LABEL.quantityReceived,
         formatQuantity(receipt.quantityReceived),
         receipt,
         rowLocator(receipt.rowNo),
@@ -100,7 +101,7 @@ const receivedEvidence = (
   const poLine = po.lines.find((line) => line.sku === sku);
   return [
     evidenceItem(
-      "Quantity received",
+      EVIDENCE_LABEL.quantityReceived,
       `0, no receipt row for ${sku} on ${po.poNumber}`,
       po,
       poLine ? lineLocator(poLine.lineNo) : INVOICE_LABEL.po,
@@ -147,7 +148,7 @@ const skuFinding = (
     evidence: [
       ...here.map(({ line }) =>
         evidenceItem(
-          "Quantity billed",
+          EVIDENCE_LABEL.quantityBilled,
           formatQuantity(line.quantity),
           invoice,
           lineLocator(line.lineNo),
@@ -182,7 +183,14 @@ const noReceiptFinding = (invoice: InvoiceRecord, poNumber: string): Finding =>
     check: "quantity_received",
     detail: "receipt",
     title: `No goods receipt found for ${poNumber}`,
-    evidence: [evidenceItem("PO number", poNumber, invoice, INVOICE_LABEL.po)],
+    evidence: [
+      evidenceItem(
+        EVIDENCE_LABEL.poNumber,
+        poNumber,
+        invoice,
+        INVOICE_LABEL.po,
+      ),
+    ],
   });
 
 const poFindings = (

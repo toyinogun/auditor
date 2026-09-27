@@ -37,12 +37,15 @@ export type Finding = z.infer<typeof Finding>;
 const isBlank = (text: string | null): boolean =>
   text === null || text.trim().length === 0;
 
-/** An analyst's Approve or Reject. A rejection needs a reason. */
+/** The longest rejection reason an analyst can store (spec 0008, AC-9). */
+export const DECISION_REASON_MAX_LENGTH = 500;
+
+/** An analyst's Approve or Reject. A rejection needs a reason of at most 500 characters. */
 export const DecisionInput = z
   .object({
     findingKey: z.string().min(1),
     status: DecisionStatus,
-    reason: z.string().nullable(),
+    reason: z.string().max(DECISION_REASON_MAX_LENGTH).nullable(),
   })
   .readonly()
   .refine((input) => input.status === "approved" || !isBlank(input.reason), {
@@ -50,6 +53,12 @@ export const DecisionInput = z
     path: ["reason"],
   });
 export type DecisionInput = z.infer<typeof DecisionInput>;
+
+/** Why a decision was not stored: a bad input, or a finding key a rerun removed (spec 0008). */
+export type DecideError = {
+  readonly code: "invalid_input" | "finding_not_found";
+  readonly message: string;
+};
 
 /** A stored decision, with the finding amount it was made on. */
 export type Decision = DecisionInput & {

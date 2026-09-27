@@ -4,7 +4,12 @@ import { formatCents } from "@/lib/schemas/money";
 import type { InvoiceRecord, PaymentRecord } from "@/lib/schemas/records";
 import { buildFinding } from "./action";
 import type { AuditContext } from "./context";
-import { evidenceItem, INVOICE_LABEL, rowLocator } from "./evidence";
+import {
+  evidenceItem,
+  INVOICE_LABEL,
+  rowLocator,
+  EVIDENCE_LABEL,
+} from "./evidence";
 
 /** Duplicate invoices (spec 0004, AC-4 and AC-5). Runs first; its copies skip every other check. */
 
@@ -95,27 +100,32 @@ const copyFinding = (
       : blockedCalculation(total, payments),
     evidence: [
       evidenceItem(
-        "Invoice number",
+        EVIDENCE_LABEL.invoiceNumber,
         copy.invoiceNumber,
         copy,
         INVOICE_LABEL.number,
       ),
-      evidenceItem("Invoice total", total, copy, INVOICE_LABEL.total),
       evidenceItem(
-        "Original invoice",
+        EVIDENCE_LABEL.invoiceTotal,
+        total,
+        copy,
+        INVOICE_LABEL.total,
+      ),
+      evidenceItem(
+        EVIDENCE_LABEL.originalInvoice,
         original.invoiceNumber,
         original,
         INVOICE_LABEL.number,
       ),
       evidenceItem(
-        "Matched on",
+        EVIDENCE_LABEL.matchedOn,
         matchedOnNumber ? "invoice number" : "PO and total",
         copy,
         matchedOnNumber ? INVOICE_LABEL.number : INVOICE_LABEL.po,
       ),
       ...payments.map((payment) =>
         evidenceItem(
-          "Payment",
+          EVIDENCE_LABEL.payment,
           `${formatCents(payment.amountCents)} for ${payment.invoiceNumber} on ${payment.paidDate}`,
           payment,
           rowLocator(payment.rowNo),

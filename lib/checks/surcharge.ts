@@ -16,6 +16,7 @@ import {
   MINUS,
   sumCents,
   TIMES,
+  EVIDENCE_LABEL,
 } from "./evidence";
 
 /** Surcharges not permitted or above their cap, and unrecognized charges (spec 0004, AC-11). */
@@ -31,7 +32,7 @@ const billedEvidence = (
 ): readonly EvidenceItem[] =>
   charges.map((charge) =>
     evidenceItem(
-      "Surcharge billed",
+      EVIDENCE_LABEL.surchargeBilled,
       formatCents(charge.amountCents),
       invoice,
       chargeLocator(charge.lineNo),
@@ -60,7 +61,7 @@ const typeFinding = (
       evidence: [
         ...billedEvidence(invoice, charges),
         evidenceItem(
-          "Permitted surcharges",
+          EVIDENCE_LABEL.permittedSurcharges,
           `no ${type} surcharge`,
           contract,
           contract.surchargeClause ?? SURCHARGE_TERMS_LOCATOR,
@@ -81,12 +82,17 @@ const typeFinding = (
     evidence: [
       ...billedEvidence(invoice, charges),
       evidenceItem(
-        "Subtotal",
+        EVIDENCE_LABEL.subtotal,
         formatCents(invoice.subtotalCents),
         invoice,
         INVOICE_LABEL.subtotal,
       ),
-      evidenceItem("Cap", formatBps(terms.capBps), contract, terms.clause),
+      evidenceItem(
+        EVIDENCE_LABEL.cap,
+        formatBps(terms.capBps),
+        contract,
+        terms.clause,
+      ),
     ],
   });
 };
@@ -117,7 +123,7 @@ const otherChargeFindings = (invoice: InvoiceRecord): readonly Finding[] =>
         title: `Unrecognized charge: ${charge.label}`,
         evidence: [
           evidenceItem(
-            "Charge billed",
+            EVIDENCE_LABEL.chargeBilled,
             formatCents(charge.amountCents),
             invoice,
             chargeLocator(charge.lineNo),
