@@ -9,3 +9,9 @@ export const err = <E = string>(error: E): Result<never, E> => ({
   ok: false,
   error,
 });
+
+/** Unwraps a result whose failure can only mean a bug (a committed fixture, say), so it throws. */
+export const orThrow = <T>(context: string, result: Result<T>): T => {
+  if (!result.ok) throw new Error(`${context}: ${result.error}`);
+  return result.value;
+};

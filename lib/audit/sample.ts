@@ -12,7 +12,7 @@ import {
 import { BRIEF_SAMPLE } from "@/lib/schemas/fixtures/brief-sample";
 import { briefSampleRecords } from "@/lib/schemas/fixtures/brief-sample-records";
 import type { DocumentRef } from "@/lib/schemas/records";
-import type { Result } from "@/lib/schemas/result";
+import { orThrow } from "@/lib/schemas/result";
 import { SampleManifest } from "@/lib/schemas/sample-manifest";
 import manifestJson from "@/public/sample/manifest.json";
 import { runAudit, type AuditRunResult } from "./run";
@@ -22,12 +22,6 @@ export const SAMPLE_MANIFEST: SampleManifest =
   SampleManifest.parse(manifestJson);
 
 type ManifestFiles = Pick<SampleManifest, "files">;
-
-/** A save that fails on the committed sample is a bug in the sample, so it throws. */
-const orThrow = <T>(what: string, result: Result<T>): T => {
-  if (!result.ok) throw new Error(`sample ${what}: ${result.error}`);
-  return result.value;
-};
 
 /** Stores one document per manifest file, with its real hash, and returns a ref lookup. */
 const storeDocuments = (
@@ -94,6 +88,10 @@ const storeRecords = (
  * The offline audit (Feature 6): clears everything, loads the brief sample from its structured
  * copy (no model call, no API key), runs the checks and stores the findings. All in one
  * transaction, so running it again replaces the run, and a failure leaves the old data intact.
+ *
+ * The `lib/db` functions called inside open their own `db.transaction` on the same connection.
+ * That nests safely: better-sqlite3 sees the open transaction and runs each inner one as a
+ * savepoint, so any throw still rolls back everything. Keep passing `db`, and keep the driver.
  */
 export const runSampleAudit = (
   db: Db,
