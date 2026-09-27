@@ -1,12 +1,9 @@
-import {
-  toContractRecord,
-  toInvoiceRecord,
-  toPaymentRecord,
-  toPurchaseOrderRecord,
-  toReceiptRecord,
-} from "@/lib/schemas/convert";
 import type { DocumentKind } from "@/lib/schemas/enums";
 import { BRIEF_SAMPLE } from "@/lib/schemas/fixtures/brief-sample";
+import {
+  BRIEF_SAMPLE_FILENAMES,
+  briefSampleRecords,
+} from "@/lib/schemas/fixtures/brief-sample-records";
 import type { AuditInput, DocumentRef } from "@/lib/schemas/records";
 import type { Result } from "@/lib/schemas/result";
 import type { Db } from "./client";
@@ -50,32 +47,29 @@ export const addDocument = (
 
 /** Stores every sample document and returns the records as converted, before any storage. */
 export const seedBriefSample = (db: Db): AuditInput => {
-  const contracts = BRIEF_SAMPLE.contracts.map((doc) =>
-    unwrap(toContractRecord(doc.extraction, addDocument(db, doc.filename))),
+  const refs = new Map(
+    BRIEF_SAMPLE_FILENAMES.map((filename) => [
+      filename,
+      addDocument(db, filename),
+    ]),
   );
-  const purchaseOrders = BRIEF_SAMPLE.purchaseOrders.map((doc) =>
-    unwrap(
-      toPurchaseOrderRecord(doc.extraction, addDocument(db, doc.filename)),
-    ),
-  );
-  const invoices = BRIEF_SAMPLE.invoices.map((doc) =>
-    unwrap(toInvoiceRecord(doc.extraction, addDocument(db, doc.filename))),
-  );
-  const receiptsDoc = addDocument(db, BRIEF_SAMPLE.receipts.filename);
-  const receipts = BRIEF_SAMPLE.receipts.rows.map((row, i) =>
-    unwrap(toReceiptRecord(row, receiptsDoc, i + 1)),
-  );
-  const paymentsDoc = addDocument(db, BRIEF_SAMPLE.payments.filename);
-  const payments = BRIEF_SAMPLE.payments.rows.map((row, i) =>
-    unwrap(toPaymentRecord(row, paymentsDoc, i + 1)),
-  );
+  const refFor = (filename: string): DocumentRef => {
+    const ref = refs.get(filename);
+    if (!ref) throw new Error(`sample file ${filename} was not stored`);
+    return ref;
+  };
+  const input = briefSampleRecords(refFor);
+  const receiptsDocumentId = refFor(BRIEF_SAMPLE.receipts.filename).documentId;
+  const paymentsDocumentId = refFor(BRIEF_SAMPLE.payments.filename).documentId;
 
-  contracts.forEach((record) => unwrap(saveContract(db, record, TEST_NOW)));
-  purchaseOrders.forEach((record) =>
+  input.contracts.forEach((record) =>
+    unwrap(saveContract(db, record, TEST_NOW)),
+  );
+  input.purchaseOrders.forEach((record) =>
     unwrap(savePurchaseOrder(db, record, TEST_NOW)),
   );
-  invoices.forEach((record) => unwrap(saveInvoice(db, record, TEST_NOW)));
-  unwrap(saveReceipts(db, receiptsDoc.documentId, receipts, TEST_NOW));
-  unwrap(savePayments(db, paymentsDoc.documentId, payments, TEST_NOW));
-  return { contracts, purchaseOrders, invoices, receipts, payments };
+  input.invoices.forEach((record) => unwrap(saveInvoice(db, record, TEST_NOW)));
+  unwrap(saveReceipts(db, receiptsDocumentId, input.receipts, TEST_NOW));
+  unwrap(savePayments(db, paymentsDocumentId, input.payments, TEST_NOW));
+  return input;
 };

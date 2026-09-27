@@ -6,7 +6,7 @@ import {
   toReceiptRecord,
 } from "../convert";
 import type { AuditInput, DocumentRef } from "../records";
-import type { Result } from "../result";
+import { orThrow } from "../result";
 import { BRIEF_SAMPLE } from "./brief-sample";
 
 /**
@@ -14,13 +14,8 @@ import { BRIEF_SAMPLE } from "./brief-sample";
  * A fixture that fails conversion is a bug in the fixture, so it throws.
  */
 
-const orThrow = <T>(filename: string, result: Result<T>): T => {
-  if (!result.ok) throw new Error(`${filename}: ${result.error}`);
-  return result.value;
-};
-
-/** Every sample file in the order `seedBriefSample` stores them. */
-const FIXTURE_ORDER: readonly string[] = [
+/** Every sample file in fixture order, the order `seedBriefSample` stores them. */
+export const BRIEF_SAMPLE_FILENAMES: readonly string[] = [
   ...BRIEF_SAMPLE.contracts.map((doc) => doc.filename),
   ...BRIEF_SAMPLE.purchaseOrders.map((doc) => doc.filename),
   ...BRIEF_SAMPLE.invoices.map((doc) => doc.filename),
@@ -29,7 +24,7 @@ const FIXTURE_ORDER: readonly string[] = [
 ];
 
 const fixtureOrderRef = (filename: string): DocumentRef => ({
-  documentId: FIXTURE_ORDER.indexOf(filename) + 1,
+  documentId: BRIEF_SAMPLE_FILENAMES.indexOf(filename) + 1,
   filename,
 });
 

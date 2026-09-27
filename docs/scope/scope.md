@@ -23,7 +23,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 3 | Data model | Foundation | done |
 | 4 | Sample data generator | Release 1 | done |
 | 5 | Six audit checks | Release 1 | done |
-| 6 | Offline audit run | Release 1 | planned |
+| 6 | Offline audit run | Release 1 | done |
 | 7 | LLM classify & extract | Release 2 | planned |
 | 8 | Upload & ingest | Release 2 | planned |
 | 9 | Design system & UI foundation | Release 3 | planned |
@@ -91,10 +91,11 @@ spec [0004](../specs/0004-six-audit-checks/index.md) · code in `lib/checks/`, `
 - [x] Verify it: `/check verify six audit checks`
 - [x] Test it: `/test six audit checks`
 
-### 6. Offline audit run
+### 6. Offline audit run · done
 Load the structured sample records into storage, run the checks, and save the findings, so the whole audit works end to end with no API key. This is what "Load sample data" will call later.
 **Done when:** one command (or call) loads the sample, runs the audit and stores 8 findings totalling $9,766.85; running it again replaces the run instead of duplicating it.
-- [ ] Build it: `/develop offline audit run`
+code in `lib/audit/`, `scripts/audit-sample/` (`pnpm audit:sample`)
+- [x] Build it: `/develop offline audit run`
 
 ## Release 2: Real documents through the LLM
 
