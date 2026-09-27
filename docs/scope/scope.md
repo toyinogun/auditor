@@ -147,11 +147,11 @@ Summary tiles (recoverable, approved, pending, % of invoiced), findings sorted b
 **Done when:** on the sample data the tiles show $9,766.85 recoverable and 18.1% of invoiced, findings list largest first, each detail shows its evidence, rejecting without a reason is blocked, and decisions survive a reload.
 spec [0008](../specs/0008-review-screen/index.md) · code in `app/(app)/review/`, `app/actions.ts`, `lib/checks/invoice-view.ts`, `lib/audit/review.ts`, `lib/db/audit.ts` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1a split pane chosen; 1f reject dialog)
 - [x] Design it (spec): `/architect review screen`
-- [ ] Build it: `/develop review screen`
-  - [ ] Storage and pure view logic: `listFindings` fields, typed `decide` errors, reason cap, `EVIDENCE_LABEL`, `describeInvoiceLines`, `highlightsFor`, `reviewTotals`, `nextPendingKey` (AC-1, AC-2, AC-4 to AC-6, AC-8, AC-9, AC-12, AC-16)
-  - [ ] Thin whole: `decideFinding`, four tiles, findings table, URL selection, invoice paper with highlights, evidence line, decision bar and reject dialog (AC-1 to AC-10, AC-16, AC-17)
-  - [ ] Edges, narrow screens and keyboard: unknown key caption, stale key alert, zero findings panel, stacked layout, ↑ ↓ A R (AC-3, AC-11 to AC-14)
-  - [ ] Logging and full green pass: `finding_decided` event, typecheck, lint, test, build, design lint (AC-15, AC-17)
+- [x] Build it: `/develop review screen`
+  - [x] Storage and pure view logic: `listFindings` fields, typed `decide` errors, reason cap, `EVIDENCE_LABEL`, `describeInvoiceLines`, `highlightsFor`, `reviewTotals`, `nextPendingKey` (AC-1, AC-2, AC-4 to AC-6, AC-8, AC-9, AC-12, AC-16)
+  - [x] Thin whole: `decideFinding`, four tiles, findings table, URL selection, invoice paper with highlights, evidence line, decision bar and reject dialog (AC-1 to AC-10, AC-16, AC-17)
+  - [x] Edges, narrow screens and keyboard: unknown key caption, stale key alert, zero findings panel, stacked layout, ↑ ↓ A R (AC-3, AC-11 to AC-14)
+  - [x] Logging and full green pass: `finding_decided` event, typecheck, lint, test, build, design lint (AC-15, AC-17)
 - [ ] Verify it: `/check verify review screen`
 
 ### 11. Export
