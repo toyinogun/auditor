@@ -26,7 +26,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 6 | Offline audit run | Release 1 | done |
 | 7 | LLM classify & extract | Release 2 | done |
 | 8 | Upload & ingest | Release 2 | done |
-| 9 | Design system & UI foundation | Release 3 | in-progress |
+| 9 | Design system & UI foundation | Release 3 | done |
 | 10 | Review screen | Release 3 | planned |
 | 11 | Export | Release 3 | planned |
 | 12 | n8n Drive intake | Release 4 | planned |
@@ -130,7 +130,7 @@ spec [0006](../specs/0006-upload-ingest/index.md) · code in `lib/ingest/`, `app
 
 An analyst can now judge every finding and hand over a claim list.
 
-### 9. Design system & UI foundation · in-progress
+### 9. Design system & UI foundation · done
 A calm, credible finance tool look: type, color, spacing, tables, tiles, and base components, so the review screen and landing page feel like one real product.
 **Done when:** `design.md` covers type, color, spacing and the core components, and the base components render in the scaffold.
 spec [0007](../specs/0007-design-system-ui-foundation/index.md) · code in `app/styles/`, `app/globals.css`, `app/(app)/`, `app/styleguide/`, `components/` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1a app bar, 1d documents, 1j empty state)
@@ -140,7 +140,7 @@ spec [0007](../specs/0007-design-system-ui-foundation/index.md) · code in `app/
   - [x] Thin whole: Money, SummaryTile, Chip, AppBar, the `(app)` shell, `/` redirect, `/review` stub, Load sample data with its reload guard (AC-8, AC-10 to AC-13)
   - [x] Remaining primitives and `/styleguide` (AC-7, AC-9)
   - [x] `/documents` move and restyle, source guards, full green pass (AC-14, AC-15, AC-18)
-- [ ] Verify it: `/check verify design system & UI foundation`
+- [x] Verify it: `/check verify design system & UI foundation`
 
 ### 10. Review screen · needs a decision
 Summary tiles (recoverable, approved, pending, % of invoiced), findings sorted by amount, and a detail panel showing the invoice with flagged lines highlighted beside contract price and quantity received. Approve or Reject, with a reason required to reject. Holds the "Load sample data" button.
