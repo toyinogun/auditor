@@ -1,7 +1,7 @@
 # 0003. Sample data generator for the brief's fictional documents
 
 **Date**: 2026-09-27
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

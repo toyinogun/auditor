@@ -70,12 +70,12 @@ A script that produces the brief's fictional world exactly: 12 real PDFs (2 cont
 **Done when:** running the script writes all 12 PDFs and both CSVs with the brief's exact figures, at least one invoice is an image only scan with no text layer, and the output is identical on every run.
 spec [0003](../specs/0003-sample-data-generator/index.md) · code in `scripts/generate-sample/`, `lib/schemas/sample-manifest.ts`, `public/sample/`
 - [x] Design it (spec): `/architect sample data generator`
-- [ ] Build it: `/develop sample data generator`
-  - [ ] Dependencies, fonts, `generate:sample` command, manifest schema and the fixture guard (AC-2, AC-8)
-  - [ ] Thin whole: text invoices, CSVs, manifest and the atomic folder swap, with read back tests (AC-1, AC-3, AC-6, AC-7, AC-9)
-  - [ ] Purchase order and contract layouts with pinned clause wording (AC-3, AC-5, AC-9)
-  - [ ] NL88310 image only scan (AC-4, AC-8)
-  - [ ] Commit `public/sample/` and the drift test (AC-1, AC-7)
+- [x] Build it: `/develop sample data generator`
+  - [x] Dependencies, fonts, `generate:sample` command, manifest schema and the fixture guard (AC-2, AC-8)
+  - [x] Thin whole: text invoices, CSVs, manifest and the atomic folder swap, with read back tests (AC-1, AC-3, AC-6, AC-7, AC-9)
+  - [x] Purchase order and contract layouts with pinned clause wording (AC-3, AC-5, AC-9)
+  - [x] NL88310 image only scan (AC-4, AC-8)
+  - [x] Commit `public/sample/` and the drift test (AC-1, AC-7)
 - [ ] Verify it: `/check verify sample data generator`
 
 ### 5. Six audit checks · Beta · needs a decision
