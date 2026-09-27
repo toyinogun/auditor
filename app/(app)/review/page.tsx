@@ -103,15 +103,16 @@ function SplitPane({
       `finding ${selected.findingKey} names document ${selected.invoiceDocumentId}, which has no invoice`,
     );
   }
-  // A matched key opens the detail on narrow screens; an unknown one keeps the table and its caption.
-  const showDetail = requested !== undefined;
+  // Any `finding` param opens the detail on narrow screens (AC-14); an unknown one says so there too.
+  const showDetail = requestedKey !== null;
+  const unknownSelection = showDetail && requested === undefined;
   return (
     <div className="grid grid-cols-1 gap-gutter lg:grid-cols-12 lg:items-start">
       <div className={cn("lg:col-span-5", showDetail && "hidden lg:block")}>
         <FindingsTable
           findings={findings}
           selectedKey={selected.findingKey}
-          unknownSelection={requestedKey !== null && requested === undefined}
+          unknownSelection={unknownSelection}
         />
       </div>
       <div className={cn("lg:col-span-7", !showDetail && "hidden lg:block")}>
@@ -119,6 +120,7 @@ function SplitPane({
           finding={selected}
           view={view}
           findingKeys={findings.map((f) => f.findingKey)}
+          unknownSelection={unknownSelection}
         />
       </div>
     </div>

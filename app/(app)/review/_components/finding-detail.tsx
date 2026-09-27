@@ -20,12 +20,15 @@ type FindingDetailProps = {
   readonly finding: FindingView;
   readonly view: InvoiceView;
   readonly findingKeys: readonly string[];
+  /** The `finding` param matched nothing; on narrow screens the table and its caption are hidden. */
+  readonly unknownSelection: boolean;
 };
 
 export function FindingDetail({
   finding,
   view,
   findingKeys,
+  unknownSelection,
 }: FindingDetailProps) {
   return (
     <section aria-labelledby="finding-heading" className="flex flex-col gap-5">
@@ -36,6 +39,11 @@ export function FindingDetail({
         <ArrowLeftIcon aria-hidden="true" className="size-4" />
         All findings
       </Link>
+      {unknownSelection && (
+        <p className="type-caption text-on-surface-muted lg:hidden">
+          That finding is not in the current audit.
+        </p>
+      )}
       <div className="flex flex-col gap-3">
         <h2 id="finding-heading" className="type-headline-md">
           <span className="font-mono">{finding.invoiceNumber}</span>
