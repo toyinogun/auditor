@@ -3,7 +3,12 @@ import { decide, listFindings, type FindingView } from "@/lib/db/audit";
 import { openDb, type Db } from "@/lib/db/client";
 import { TEST_NOW } from "@/lib/db/testing";
 import type { DecisionState } from "@/lib/schemas/finding";
-import { nextPendingKey, recordDecision, reviewTotals } from "./review";
+import {
+  nextPendingKey,
+  readReview,
+  recordDecision,
+  reviewTotals,
+} from "./review";
 import { runSampleAudit } from "./sample";
 
 const APPROVED: DecisionState = {
@@ -276,5 +281,64 @@ describe("recordDecision (spec 0008, AC-8, AC-9, AC-12, AC-15)", () => {
     expect(events()).toEqual([
       expect.objectContaining({ status: null, outcome: "invalid_input" }),
     ]);
+  });
+});
+
+describe("readReview (spec 0008, AC-1 to AC-4, AC-13)", () => {
+  let db: Db;
+
+  beforeEach(() => {
+    db = openDb(":memory:");
+  });
+
+  it("reads nothing to review before any audit run", () => {
+    expect(readReview(db, null)).toEqual({
+      headline: null,
+      findings: [],
+      invoiceCount: 0,
+      selection: null,
+    });
+  });
+
+  it("selects the largest finding and its invoice when no key is asked for", () => {
+    runSampleAudit(db, () => TEST_NOW);
+    const review = readReview(db, null);
+    expect(review.headline?.recoverableCents).toBe(976_685);
+    expect(review.findings).toHaveLength(8);
+    expect(review.invoiceCount).toBe(6);
+    expect(review.selection?.requested).toBe(false);
+    expect(review.selection?.finding.findingKey).toBe(
+      review.findings[0].findingKey,
+    );
+    expect(review.selection?.view.invoice.documentId).toBe(
+      review.findings[0].invoiceDocumentId,
+    );
+  });
+
+  it("selects the asked for finding with its own invoice", () => {
+    runSampleAudit(db, () => TEST_NOW);
+    const wanted = listFindings(db)[3];
+    const review = readReview(db, wanted.findingKey);
+    expect(review.selection?.requested).toBe(true);
+    expect(review.selection?.finding.findingKey).toBe(wanted.findingKey);
+    expect(review.selection?.view.invoice.documentId).toBe(
+      wanted.invoiceDocumentId,
+    );
+  });
+
+  it("falls back to the first finding for a key not in the run", () => {
+    runSampleAudit(db, () => TEST_NOW);
+    const review = readReview(db, "nope");
+    expect(review.selection?.requested).toBe(false);
+    expect(review.selection?.finding.findingKey).toBe(
+      review.findings[0].findingKey,
+    );
+  });
+
+  it("reads everything in one transaction, so another visitor's reload cannot land between reads", () => {
+    runSampleAudit(db, () => TEST_NOW);
+    const transaction = vi.spyOn(db, "transaction");
+    readReview(db, null);
+    expect(transaction).toHaveBeenCalledOnce();
   });
 });

@@ -3,13 +3,16 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Money } from "@/components/money";
 import { SummaryTile } from "@/components/summary-tile";
-import { latestHeadline, type Headline } from "@/lib/audit/headline";
-import { reviewTotals, type ReviewTotals } from "@/lib/audit/review";
+import type { Headline } from "@/lib/audit/headline";
+import {
+  readReview,
+  reviewTotals,
+  type ReviewSelection,
+  type ReviewTotals,
+} from "@/lib/audit/review";
 import { SAMPLE_MANIFEST } from "@/lib/audit/sample";
-import { describeInvoiceLines } from "@/lib/checks/invoice-view";
-import { latestAuditRun, listFindings, type FindingView } from "@/lib/db/audit";
+import type { FindingView } from "@/lib/db/audit";
 import { getDb } from "@/lib/db/client";
-import { loadAuditInput } from "@/lib/db/records";
 import type { DocumentKind } from "@/lib/schemas/enums";
 import { cn } from "@/lib/utils";
 import { FindingDetail } from "./_components/finding-detail";
@@ -27,9 +30,11 @@ export default async function ReviewPage({
 }: PageProps<"/review">) {
   await connection();
   const { finding } = await searchParams;
-  const db = getDb();
-  const headline = latestHeadline(db);
-  const findings = headline === null ? [] : listFindings(db);
+  const requestedKey = typeof finding === "string" ? finding : null;
+  const { headline, findings, invoiceCount, selection } = readReview(
+    getDb(),
+    requestedKey,
+  );
   return (
     <div className="flex flex-col gap-6">
       <h1 className="type-headline-lg">Review</h1>
@@ -38,12 +43,13 @@ export default async function ReviewPage({
       ) : (
         <>
           <Tiles headline={headline} totals={reviewTotals(findings)} />
-          {findings.length === 0 ? (
-            <NoFindings invoiceCount={latestAuditRun(db)?.invoiceCount ?? 0} />
+          {selection === null ? (
+            <NoFindings invoiceCount={invoiceCount} />
           ) : (
             <SplitPane
               findings={findings}
-              requestedKey={typeof finding === "string" ? finding : null}
+              selection={selection}
+              requestedKey={requestedKey}
             />
           )}
         </>
@@ -87,25 +93,17 @@ function Tiles({
 /** Table and detail side by side from 1024px; below that, one or the other (AC-14). */
 function SplitPane({
   findings,
+  selection,
   requestedKey,
 }: {
   readonly findings: readonly FindingView[];
+  readonly selection: ReviewSelection;
   readonly requestedKey: string | null;
 }) {
-  const requested = findings.find((f) => f.findingKey === requestedKey);
-  const selected = requested ?? findings[0];
-  const view = describeInvoiceLines(
-    loadAuditInput(getDb()),
-    selected.invoiceDocumentId,
-  );
-  if (view === null) {
-    throw new Error(
-      `finding ${selected.findingKey} names document ${selected.invoiceDocumentId}, which has no invoice`,
-    );
-  }
+  const { finding: selected, view } = selection;
   // Any `finding` param opens the detail on narrow screens (AC-14); an unknown one says so there too.
   const showDetail = requestedKey !== null;
-  const unknownSelection = showDetail && requested === undefined;
+  const unknownSelection = showDetail && !selection.requested;
   return (
     <div className="grid grid-cols-1 gap-gutter lg:grid-cols-12 lg:items-start">
       <div className={cn("lg:col-span-5", showDetail && "hidden lg:block")}>

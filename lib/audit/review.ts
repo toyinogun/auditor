@@ -1,10 +1,21 @@
 import "server-only";
-import { decide, listFindings, type FindingView } from "@/lib/db/audit";
+import {
+  describeInvoiceLines,
+  type InvoiceView,
+} from "@/lib/checks/invoice-view";
+import {
+  decide,
+  latestAuditRun,
+  listFindings,
+  type FindingView,
+} from "@/lib/db/audit";
 import type { Db } from "@/lib/db/client";
+import { loadAuditInput } from "@/lib/db/records";
 import { logEvent } from "@/lib/log";
 import { DecisionStatus } from "@/lib/schemas/enums";
 import type { DecideError } from "@/lib/schemas/finding";
 import { ok, type Result } from "@/lib/schemas/result";
+import { latestHeadline, type Headline } from "./headline";
 
 /** The review screen's Approved and Pending tiles (spec 0008, AC-1). */
 export type ReviewTotals = {
@@ -48,6 +59,62 @@ export const nextPendingKey = (
       ?.findingKey ?? null
   );
 };
+
+/** The finding the detail panel shows and its invoice (spec 0008, AC-3, AC-4). */
+export type ReviewSelection = {
+  readonly finding: FindingView;
+  readonly view: InvoiceView;
+  /** False when no key was asked for, or the asked for key is not in the run. */
+  readonly requested: boolean;
+};
+
+/** Everything `/review` shows, read as one snapshot. */
+export type ReviewSnapshot = {
+  readonly headline: Headline | null;
+  readonly findings: readonly FindingView[];
+  readonly invoiceCount: number;
+  readonly selection: ReviewSelection | null;
+};
+
+const selectionFor = (
+  db: Db,
+  findings: readonly FindingView[],
+  requestedKey: string | null,
+): ReviewSelection | null => {
+  const requested = findings.find((f) => f.findingKey === requestedKey);
+  const finding = requested ?? findings[0];
+  if (finding === undefined) return null;
+  const view = describeInvoiceLines(
+    loadAuditInput(db),
+    finding.invoiceDocumentId,
+  );
+  if (view === null) {
+    throw new Error(
+      `finding ${finding.findingKey} names document ${finding.invoiceDocumentId}, which has no invoice`,
+    );
+  }
+  return { finding, view, requested: requested !== undefined };
+};
+
+/**
+ * The review screen's data in one transaction, so a Load sample data from another visitor
+ * cannot land between reading the findings and reading their invoices. The selection falls
+ * back to the first (largest) finding when `requestedKey` is null or not in the run (AC-3).
+ */
+export const readReview = (
+  db: Db,
+  requestedKey: string | null,
+): ReviewSnapshot =>
+  db.transaction(() => {
+    const headline = latestHeadline(db);
+    const findings = headline === null ? [] : listFindings(db);
+    return {
+      headline,
+      findings,
+      invoiceCount: latestAuditRun(db)?.invoiceCount ?? 0,
+      selection: selectionFor(db, findings, requestedKey),
+    };
+  });
 
 /** What the decision bar needs back after Approve or Reject (spec 0008, AC-8). */
 export type DecisionMade = {
