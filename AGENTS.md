@@ -34,6 +34,7 @@ pnpm lint         # ESLint (lint:fix to autofix)
 pnpm format       # Prettier write (format:check to verify)
 pnpm test         # Vitest, *.test.ts beside the source (test:watch to watch)
 pnpm exec drizzle-kit generate  # New SQL migration in drizzle/ after editing lib/db/schema.ts (applied at server start)
+pnpm generate:sample  # Rewrite public/sample/ from the fixture (committed output, never edit by hand)
 ```
 
 ## Specs
@@ -74,12 +75,14 @@ Chosen by `/audit`, installed by `/develop tooling`:
 - [shadcn](.agents/skills/shadcn/): `shadcn-ui/ui`, adding and customizing shadcn/ui components
 - [tailwind-v4-shadcn](.agents/skills/tailwind-v4-shadcn/): `secondsky/claude-skills`, Tailwind v4 `@theme` and CSS variable patterns (ignore its Vite config)
 
-Declined: drizzle-sqlite, better-sqlite3-rebuild, vitest, zod, exceljs
+Declined: drizzle-sqlite, better-sqlite3-rebuild, vitest, zod, exceljs, pdfkit, @napi-rs/canvas, tsx, unpdf
+Declined MCP servers: linzhiqin2003/PDFKit, ivarvd-hldng/pdf-generator-mcp-server, aviddiviner/mcp-pdfkit
 
 ## Context files
 
 - [n8n/AGENTS.md](n8n/AGENTS.md): the Google Drive intake workflow that posts to `/api/ingest`
 - [lib/schemas/AGENTS.md](lib/schemas/AGENTS.md): the shared Zod shapes, money in cents, converters and keys
 - [lib/db/AGENTS.md](lib/db/AGENTS.md): SQLite schema, migrations and the storage functions
+- [scripts/generate-sample/AGENTS.md](scripts/generate-sample/AGENTS.md): the sample data generator that renders `public/sample/` from the fixture
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
