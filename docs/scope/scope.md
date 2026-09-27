@@ -21,7 +21,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | done |
 | 3 | Data model | Foundation | done |
-| 4 | Sample data generator | Release 1 | in-progress |
+| 4 | Sample data generator | Release 1 | done |
 | 5 | Six audit checks | Release 1 | planned |
 | 6 | Offline audit run | Release 1 | planned |
 | 7 | LLM classify & extract | Release 2 | planned |
@@ -65,7 +65,7 @@ spec [0002](../specs/0002-data-model/index.md) · code in `lib/schemas/`, `lib/d
 
 The smallest complete audit: fictional documents go in, the checks run with no API key, and the finding log matches the brief to the cent.
 
-### 4. Sample data generator · in-progress
+### 4. Sample data generator · done
 A script that produces the brief's fictional world exactly: 12 real PDFs (2 contracts, 4 purchase orders, 6 invoices), `receipts.csv`, `ap_payments.csv`, and a `manifest.json` listing each file. The structured copy for offline mode is the existing fixture (`lib/schemas/fixtures/brief-sample.ts`) that every PDF is rendered from.
 **Done when:** running the script writes all 12 PDFs and both CSVs with the brief's exact figures, at least one invoice is an image only scan with no text layer, and the output is identical on every run.
 spec [0003](../specs/0003-sample-data-generator/index.md) · code in `scripts/generate-sample/`, `lib/schemas/sample-manifest.ts`, `public/sample/`
