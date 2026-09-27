@@ -157,13 +157,13 @@ spec [0008](../specs/0008-review-screen/index.md) · code in `app/(app)/review/`
 ### 11. Export · in-progress
 The finding log as `.xlsx` and `.csv`, including the analyst's decisions and a total row.
 **Done when:** both files open cleanly, list every finding with its evidence and decision, and the total row matches the review screen after approvals and rejections.
-spec [0009](../specs/0009-export/index.md) · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1g export menu chosen; 1h claim preview deferred)
+spec [0009](../specs/0009-export/index.md) · code in `lib/export/`, `lib/audit/export.ts`, `app/api/export/` · wireframes [Auditor Wireframes](https://claude.ai/design/p/41c4bab7-232e-4081-8911-fc9e827fd34b?file=Auditor+Wireframes.dc.html) (1g export menu chosen; 1h claim preview deferred)
 - [x] Design it (spec): `/architect export`
-- [ ] Build it: `/develop export`
-  - [ ] Pure pieces: labels, money and time formatting, file name, `exportTable`, the csv writer with BOM, quoting and formula guard (AC-4 to AC-8, AC-10, AC-11)
-  - [ ] Thin whole: `readExport` and `handleExportRequest`, `/api/export`, the Export menu in the app bar, csv end to end (AC-1, AC-3, AC-12, AC-13)
-  - [ ] Excel: `exceljs`, the Findings and Summary sheets, round trip test (AC-7 to AC-9, AC-13)
-  - [ ] Edges and green pass: disabled Export with tooltip, 400 and 404, `export` log event, demo mode, full checks (AC-2, AC-3, AC-14 to AC-16)
+- [x] Build it: `/develop export`
+  - [x] Pure pieces: labels, money and time formatting, file name, `exportTable`, the csv writer with BOM, quoting and formula guard (AC-4 to AC-8, AC-10, AC-11)
+  - [x] Thin whole: `readExport` and `handleExportRequest`, `/api/export`, the Export menu in the app bar, csv end to end (AC-1, AC-3, AC-12, AC-13)
+  - [x] Excel: `exceljs`, the Findings and Summary sheets, round trip test (AC-7 to AC-9, AC-13)
+  - [x] Edges and green pass: disabled Export with tooltip, 400 and 404, `export` log event, demo mode, full checks (AC-2, AC-3, AC-14 to AC-16)
 - [ ] Verify it: `/check verify export`
 
 ## Release 4: Intake and launch

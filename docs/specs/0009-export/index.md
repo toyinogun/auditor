@@ -1,7 +1,7 @@
 # 0009. Export the finding log as .xlsx and .csv
 
 **Date**: 2026-09-27
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -183,10 +183,10 @@ Other methods get Next's automatic 405.
 
 Skateboard: the first slice is a complete, usable export (menu, route, a real .csv with totals) end to end; the .xlsx and the edges grow it.
 
-1. [ ] Pure pieces with tests first: `lib/export/labels.ts`, `format.ts` (`centsToPlain`, `utcMinute`, `exportFileName`), `table.ts` (`exportTable` from a snapshot built from fixture findings), `csv.ts` (`toCsv` with BOM, CRLF, RFC 4180 quoting and the formula guard). Satisfies **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-10**, **AC-11**.
-2. [ ] Thin whole (csv end to end): `readExport` in one transaction and `handleExportRequest` in `lib/audit/export.ts`, with tests on in memory SQLite and `seedBriefSample`; `app/api/export/route.ts`; `export-menu.tsx` with both items linking to the route (only csv works yet), wired into `AppBar` through `canExport` from the layout. Satisfies **AC-1**, **AC-3**, **AC-12**, **AC-13** (csv).
-3. [ ] Excel: `pnpm add exceljs` (pinned); `lib/export/xlsx.ts` with the Findings sheet (bold frozen header, autofilter over findings only, widths, wrap, money format, bold totals) and the Summary sheet; round trip test reading the buffer back with exceljs; route serves xlsx. Satisfies **AC-7**, **AC-8**, **AC-9**, **AC-13** (xlsx).
-4. [ ] Edges and polish: disabled Export with the focusable tooltip wrapper when no run; 400 and 404 paths; the `export` log event; confirm `DEMO_MODE=true` exports; then the full green pass (typecheck, lint, test, build, design lint, amber guard). Satisfies **AC-2**, **AC-3**, **AC-14**, **AC-15**, **AC-16**.
+1. [x] Pure pieces with tests first: `lib/export/labels.ts`, `format.ts` (`centsToPlain`, `utcMinute`, `exportFileName`), `table.ts` (`exportTable` from a snapshot built from fixture findings), `csv.ts` (`toCsv` with BOM, CRLF, RFC 4180 quoting and the formula guard). Satisfies **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-8**, **AC-10**, **AC-11**.
+2. [x] Thin whole (csv end to end): `readExport` in one transaction and `handleExportRequest` in `lib/audit/export.ts`, with tests on in memory SQLite and `seedBriefSample`; `app/api/export/route.ts`; `export-menu.tsx` with both items linking to the route (only csv works yet), wired into `AppBar` through `canExport` from the layout. Satisfies **AC-1**, **AC-3**, **AC-12**, **AC-13** (csv).
+3. [x] Excel: `pnpm add exceljs` (pinned); `lib/export/xlsx.ts` with the Findings sheet (bold frozen header, autofilter over findings only, widths, wrap, money format, bold totals) and the Summary sheet; round trip test reading the buffer back with exceljs; route serves xlsx. Satisfies **AC-7**, **AC-8**, **AC-9**, **AC-13** (xlsx).
+4. [x] Edges and polish: disabled Export with the focusable tooltip wrapper when no run; 400 and 404 paths; the `export` log event; confirm `DEMO_MODE=true` exports; then the full green pass (typecheck, lint, test, build, design lint, amber guard). Satisfies **AC-2**, **AC-3**, **AC-14**, **AC-15**, **AC-16**.
 
 ## Consequences
 
